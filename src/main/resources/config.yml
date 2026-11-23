@@ -10,6 +10,12 @@ isolation:
   # Tasks have no world, so they cannot be filtered per world.
   tasks: true
 
+  # Cancel the actions a plugin performs in a world where it is disabled, even
+  # from its scheduled tasks: teleporting, kicking or damaging players, changing
+  # their game mode or potion effects, spawning creatures, opening inventories,
+  # making players chat. The plugin causing the action is found on the call stack.
+  actions: true
+
   # Events always delivered to plugins, even in worlds where they are disabled.
   # These keep plugins' internal data consistent (players joining/leaving,
   # moving between worlds, worlds loading/unloading). Use event class names.

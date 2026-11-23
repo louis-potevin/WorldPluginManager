@@ -14,12 +14,15 @@ public final class IsolationSettings {
 
     private final boolean events;
     private final boolean tasks;
+    private final boolean actions;
     private final Set<String> alwaysAllowedEvents;
     private final long scanInterval;
 
-    private IsolationSettings(boolean events, boolean tasks, Set<String> alwaysAllowedEvents, long scanInterval) {
+    private IsolationSettings(boolean events, boolean tasks, boolean actions,
+                              Set<String> alwaysAllowedEvents, long scanInterval) {
         this.events = events;
         this.tasks = tasks;
+        this.actions = actions;
         this.alwaysAllowedEvents = Collections.unmodifiableSet(alwaysAllowedEvents);
         this.scanInterval = Math.max(MIN_SCAN_INTERVAL, scanInterval);
     }
@@ -27,11 +30,12 @@ public final class IsolationSettings {
     /** Reads the section; missing values fall back to the defaults bundled in config.yml. */
     public static IsolationSettings from(ConfigurationSection section) {
         if (section == null) {
-            return new IsolationSettings(false, false, new HashSet<String>(), 100L);
+            return new IsolationSettings(false, false, false, new HashSet<String>(), 100L);
         }
         return new IsolationSettings(
                 section.getBoolean("events"),
                 section.getBoolean("tasks"),
+                section.getBoolean("actions"),
                 new HashSet<>(section.getStringList("always-allowed-events")),
                 section.getLong("scan-interval"));
     }
@@ -42,6 +46,10 @@ public final class IsolationSettings {
 
     public boolean isolateTasks() {
         return tasks;
+    }
+
+    public boolean guardActions() {
+        return actions;
     }
 
     /** Simple class names of events never filtered. */
