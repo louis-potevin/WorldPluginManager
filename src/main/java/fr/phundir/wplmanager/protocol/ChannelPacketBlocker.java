@@ -6,7 +6,7 @@ import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.MinecraftKey;
-import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import fr.phundir.wplmanager.util.Plugins;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
@@ -18,16 +18,16 @@ import org.bukkit.plugin.Plugin;
  * Requires ProtocolLib: only reference this class after checking that ProtocolLib is installed.
  */
 public final class ChannelPacketBlocker extends PacketAdapter {
-    private final WorldStatusStore statusStore;
+    private final BlockingPolicy policy;
 
-    private ChannelPacketBlocker(Plugin plugin, WorldStatusStore statusStore) {
+    private ChannelPacketBlocker(Plugin plugin, BlockingPolicy policy) {
         super(plugin, ListenerPriority.NORMAL,
                 PacketType.Play.Client.CUSTOM_PAYLOAD, PacketType.Play.Server.CUSTOM_PAYLOAD);
-        this.statusStore = statusStore;
+        this.policy = policy;
     }
 
-    public static void register(Plugin plugin, WorldStatusStore statusStore) {
-        ProtocolLibrary.getProtocolManager().addPacketListener(new ChannelPacketBlocker(plugin, statusStore));
+    public static void register(Plugin plugin, BlockingPolicy policy) {
+        ProtocolLibrary.getProtocolManager().addPacketListener(new ChannelPacketBlocker(plugin, policy));
     }
 
     @Override
@@ -53,7 +53,6 @@ public final class ChannelPacketBlocker extends PacketAdapter {
         String namespace = separator >= 0 ? key.substring(0, separator) : key;
 
         // Channel namespaces are lowercase, plugin names usually are not.
-        Plugin owner = Plugins.findByName(namespace);
-        return owner != null && !statusStore.isEnabled(owner.getName(), player.getWorld().getName());
+        return policy.isBlocked(player, Plugins.findByName(namespace));
     }
 }

@@ -32,3 +32,6 @@ permissions:
   worldpluginmanager.focus:
     description: Allows the use of the /focus command.
     default: op
+  worldpluginmanager.bypass:
+    description: Ignores per-world plugin restrictions (commands and plugin channels).
+    default: false

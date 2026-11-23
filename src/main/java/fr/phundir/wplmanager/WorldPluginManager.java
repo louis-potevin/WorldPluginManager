@@ -1,5 +1,7 @@
 package fr.phundir.wplmanager;
 
+import fr.phundir.wplmanager.blocking.BlockingPolicy;
+import fr.phundir.wplmanager.blocking.CommandOwnerResolver;
 import fr.phundir.wplmanager.command.FlagsCommand;
 import fr.phundir.wplmanager.command.FocusCommand;
 import fr.phundir.wplmanager.command.PluginStatusCommand;
@@ -19,6 +21,7 @@ public final class WorldPluginManager extends JavaPlugin {
 
     private Messages messages;
     private WorldStatusStore statusStore;
+    private BlockingPolicy blockingPolicy;
 
     @Override
     public void onEnable() {
@@ -30,12 +33,16 @@ public final class WorldPluginManager extends JavaPlugin {
         statusStore = new WorldStatusStore(this);
         statusStore.load();
 
+        blockingPolicy = new BlockingPolicy(this, statusStore);
+
         registerCommand("displ", new PluginStatusCommand(this, false));
         registerCommand("enpl", new PluginStatusCommand(this, true));
         registerCommand("flags", new FlagsCommand(this));
         registerCommand("focus", new FocusCommand(this));
 
-        getServer().getPluginManager().registerEvents(new CommandBlockListener(this), this);
+        CommandOwnerResolver commandResolver = new CommandOwnerResolver(getLogger());
+        getServer().getPluginManager().registerEvents(
+                new CommandBlockListener(messages, commandResolver, blockingPolicy), this);
         registerPacketBlocker();
 
         getLogger().info("Plugin enabled!");
@@ -76,6 +83,6 @@ public final class WorldPluginManager extends JavaPlugin {
             getLogger().warning(PROTOCOL_LIB + " not found. Packet listeners disabled.");
             return;
         }
-        ChannelPacketBlocker.register(this, statusStore);
+        ChannelPacketBlocker.register(this, blockingPolicy);
     }
 }
