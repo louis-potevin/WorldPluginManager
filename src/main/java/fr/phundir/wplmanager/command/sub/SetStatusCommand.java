@@ -56,13 +56,22 @@ public final class SetStatusCommand extends SubCommand {
         sendStatus(sender, target.getName(), world.getName(), enable);
     }
 
+    /** Plugins disabled somewhere (and still installed), or every plugin if none is. */
+    private List<String> disabledPluginNames() {
+        List<String> installed = pluginNames();
+        List<String> disabled = new ArrayList<>(installed);
+        disabled.retainAll(statusStore.getDisabledPlugins());
+        return disabled.isEmpty() ? installed : disabled;
+    }
+
     @Override
     public List<String> complete(CommandSender sender, String[] args) {
         switch (args.length) {
             case 1:
-                return pluginNames();
+                return enable ? disabledPluginNames() : otherPluginNames();
             case 2:
-                List<String> worlds = new ArrayList<>(worldNames());
+                // Only suggest worlds where the command would change something.
+                List<String> worlds = new ArrayList<>(worldsWhere(args[0], !enable));
                 worlds.add(ALL_WORLDS);
                 return worlds;
             default:

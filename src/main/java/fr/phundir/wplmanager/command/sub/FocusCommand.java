@@ -45,7 +45,7 @@ public final class FocusCommand extends SubCommand {
     public List<String> complete(CommandSender sender, String[] args) {
         switch (args.length) {
             case 1:
-                return pluginNames();
+                return otherPluginNames();
             case 2:
                 return worldNames();
             default:

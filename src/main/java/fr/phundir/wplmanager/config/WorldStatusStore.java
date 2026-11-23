@@ -4,7 +4,9 @@ import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -56,6 +58,19 @@ public final class WorldStatusStore {
     /** Changes a status in memory; call {@link #save()} to persist it. */
     public void setEnabled(String pluginName, String worldName, boolean enabled) {
         statusByWorld.computeIfAbsent(worldName, k -> new ConcurrentHashMap<>()).put(pluginName, enabled);
+    }
+
+    /** Names of the plugins explicitly disabled in at least one world. */
+    public Set<String> getDisabledPlugins() {
+        Set<String> disabled = new HashSet<>();
+        for (Map<String, Boolean> statuses : statusByWorld.values()) {
+            for (Map.Entry<String, Boolean> entry : statuses.entrySet()) {
+                if (!entry.getValue()) {
+                    disabled.add(entry.getKey());
+                }
+            }
+        }
+        return disabled;
     }
 
     /** Explicitly configured statuses for a world (empty if none). */

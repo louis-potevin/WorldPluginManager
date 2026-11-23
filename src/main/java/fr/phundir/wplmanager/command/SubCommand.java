@@ -10,6 +10,7 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
@@ -139,6 +140,33 @@ public abstract class SubCommand {
 
     private String join(List<String> entries) {
         return entries.isEmpty() ? messages.get("list_none") : String.join(", ", entries);
+    }
+
+    /** All plugin names except WorldPluginManager, which can never be disabled. */
+    protected List<String> otherPluginNames() {
+        List<String> names = pluginNames();
+        names.remove(plugin.getName());
+        return names;
+    }
+
+    /**
+     * Worlds where the plugin typed in {@code pluginArg} currently has the given status.
+     * Falls back to every world if the plugin is unknown or no world matches,
+     * so completion never ends up empty.
+     */
+    protected List<String> worldsWhere(String pluginArg, boolean enabled) {
+        List<String> worlds = worldNames();
+        Plugin target = Plugins.findByName(pluginArg);
+        if (target == null) {
+            return worlds;
+        }
+        List<String> matching = new ArrayList<>();
+        for (String worldName : worlds) {
+            if (statusStore.isEnabled(target.getName(), worldName) == enabled) {
+                matching.add(worldName);
+            }
+        }
+        return matching.isEmpty() ? worlds : matching;
     }
 
     protected static List<String> pluginNames() {
