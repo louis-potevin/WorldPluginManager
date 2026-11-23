@@ -10,6 +10,9 @@ import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Loads {@code messages.yml} and formats its entries.
@@ -53,6 +56,25 @@ public final class Messages {
             message = message.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
         }
         return ChatColor.translateAlternateColorCodes('&', message);
+    }
+
+    /**
+     * Returns a multi-line message (item lore...): a YAML list, or a string with {@code \n} line breaks.
+     *
+     * @param placeholders alternating names and values, as in {@link #get}
+     */
+    public List<String> lines(String key, String... placeholders) {
+        List<String> raw = config.isList(key)
+                ? config.getStringList(key)
+                : Arrays.asList(get(key).split("\n"));
+        List<String> lines = new ArrayList<>(raw.size());
+        for (String line : raw) {
+            for (int i = 0; i + 1 < placeholders.length; i += 2) {
+                line = line.replace("{" + placeholders[i] + "}", placeholders[i + 1]);
+            }
+            lines.add(ChatColor.translateAlternateColorCodes('&', line));
+        }
+        return lines;
     }
 
     public void send(CommandSender recipient, String key, String... placeholders) {
