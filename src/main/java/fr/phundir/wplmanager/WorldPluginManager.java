@@ -2,9 +2,12 @@ package fr.phundir.wplmanager;
 
 import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import fr.phundir.wplmanager.blocking.CommandOwnerResolver;
-import fr.phundir.wplmanager.command.FlagsCommand;
-import fr.phundir.wplmanager.command.FocusCommand;
-import fr.phundir.wplmanager.command.PluginStatusCommand;
+import fr.phundir.wplmanager.command.LegacyCommand;
+import fr.phundir.wplmanager.command.WpmCommand;
+import fr.phundir.wplmanager.command.sub.FocusCommand;
+import fr.phundir.wplmanager.command.sub.HelpCommand;
+import fr.phundir.wplmanager.command.sub.SetStatusCommand;
+import fr.phundir.wplmanager.command.sub.StatusCommand;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
 import fr.phundir.wplmanager.listener.CommandBlockListener;
@@ -38,10 +41,7 @@ public final class WorldPluginManager extends JavaPlugin {
 
         blockingPolicy = new BlockingPolicy(this, statusStore);
 
-        registerCommand("displ", new PluginStatusCommand(this, false));
-        registerCommand("enpl", new PluginStatusCommand(this, true));
-        registerCommand("flags", new FlagsCommand(this));
-        registerCommand("focus", new FocusCommand(this));
+        registerCommands();
 
         CommandOwnerResolver commandResolver = new CommandOwnerResolver(getLogger());
         getServer().getPluginManager().registerEvents(
@@ -77,6 +77,22 @@ public final class WorldPluginManager extends JavaPlugin {
         if (commandVisibility != null) {
             commandVisibility.refreshAll();
         }
+    }
+
+    private void registerCommands() {
+        WpmCommand wpm = new WpmCommand(messages);
+        wpm.register(new SetStatusCommand(this, true));
+        wpm.register(new SetStatusCommand(this, false));
+        wpm.register(new FocusCommand(this));
+        wpm.register(new StatusCommand(this));
+        wpm.register(new HelpCommand(this, wpm));
+        registerCommand(WpmCommand.LABEL, wpm);
+
+        // Pre-/wpm commands, kept for existing servers.
+        registerCommand("enpl", new LegacyCommand(wpm, "enable"));
+        registerCommand("displ", new LegacyCommand(wpm, "disable"));
+        registerCommand("focus", new LegacyCommand(wpm, "focus"));
+        registerCommand("flags", new LegacyCommand(wpm, "status"));
     }
 
     private void registerCommand(String name, TabExecutor executor) {

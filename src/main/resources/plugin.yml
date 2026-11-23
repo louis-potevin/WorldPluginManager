@@ -3,34 +3,42 @@ main: fr.phundir.wplmanager.WorldPluginManager
 version: 2.0
 softdepend: [ProtocolLib]
 commands:
-  displ:
-    description: Disables a plugin in a specified world.
-    usage: /displ <plugin> <world>
-    permission: worldpluginmanager.displ
+  wpm:
+    description: Manages which plugins are enabled in each world.
+    usage: /wpm help
+    aliases: [worldpluginmanager, wplm]
   enpl:
-    description: Enables a plugin in a specified world.
-    usage: /enpl <plugin> <world>
-    permission: worldpluginmanager.enpl
-  flags:
-    description: Displays the status of plugins in a specified world.
-    usage: /flags <world> [plugin]
-    permission: worldpluginmanager.flags
+    description: Legacy alias of /wpm enable.
+    usage: /wpm enable <plugin> [world|*]
+  displ:
+    description: Legacy alias of /wpm disable.
+    usage: /wpm disable <plugin> [world|*]
   focus:
-    description: Sets a plugin to be enabled only in a specified world.
-    usage: /focus <plugin> <world>
-    permission: worldpluginmanager.focus
+    description: Legacy alias of /wpm focus.
+    usage: /wpm focus <plugin> [world]
+  flags:
+    description: Legacy alias of /wpm status.
+    usage: /wpm status [world] [plugin]
 permissions:
-  worldpluginmanager.displ:
-    description: Allows the use of the /displ command.
+  worldpluginmanager.*:
+    description: Gives access to every /wpm command (but not the bypass).
     default: op
+    children:
+      worldpluginmanager.enpl: true
+      worldpluginmanager.displ: true
+      worldpluginmanager.focus: true
+      worldpluginmanager.flags: true
   worldpluginmanager.enpl:
-    description: Allows the use of the /enpl command.
+    description: Allows /wpm enable.
     default: op
-  worldpluginmanager.flags:
-    description: Allows the use of the /flags command.
+  worldpluginmanager.displ:
+    description: Allows /wpm disable.
     default: op
   worldpluginmanager.focus:
-    description: Allows the use of the /focus command.
+    description: Allows /wpm focus.
+    default: op
+  worldpluginmanager.flags:
+    description: Allows /wpm status.
     default: op
   worldpluginmanager.bypass:
     description: Ignores per-world plugin restrictions (commands and plugin channels).

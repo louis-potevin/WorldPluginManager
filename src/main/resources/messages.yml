@@ -1,10 +1,35 @@
-plugin_disabled: "&cThe plugin {plugin} is disabled in the world {world}."
+# Color codes use '&'. Placeholders are written {like_this}.
+# Keys missing from this file fall back to the plugin's built-in defaults.
+
+# Status changes
 plugin_enabled: "&aThe plugin {plugin} is enabled in the world {world}."
+plugin_disabled: "&cThe plugin {plugin} is disabled in the world {world}."
+plugin_enabled_everywhere: "&aThe plugin {plugin} is now enabled in every world."
+plugin_disabled_everywhere: "&cThe plugin {plugin} is now disabled in every world."
+plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
+
+# Errors
 plugin_not_found: "&cPlugin {plugin} not found."
 world_not_found: "&cThe world {world} does not exist."
+world_required: "&cPlease specify a world: &e{usage}"
 cannot_disable_main_plugin: "&cYou cannot disable the main plugin {plugin} in any world."
 no_permission: "&cYou do not have permission to use this command."
 usage: "&cUsage: {usage}"
-flags_header: "&6Plugins for world {world}:"
-flags_empty: "&eNo plugin is configured for the world {world}."
-plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
+unknown_subcommand: "&cUnknown subcommand &e{subcommand}&c. Type &e/wpm help&c to see the commands."
+
+# /wpm status
+status_header: "&6Plugins in the world &e{world}&6:"
+list_enabled: "&a✔ Enabled ({count}): &f{entries}"
+list_disabled: "&c✘ Disabled ({count}): &f{entries}"
+list_none: "&7none"
+
+# /wpm help
+help_header: "&6&lWorldPluginManager &7- commands"
+help_entry: "&e{usage} &7- {description}"
+help_hover: "&7Click to type this command"
+help_footer: "&7[world] defaults to the world you are in, &e* &7means every world."
+help_enable: "Enable a plugin in a world"
+help_disable: "Disable a plugin in a world"
+help_focus: "Enable a plugin only in one world"
+help_status: "See which plugins are enabled in a world"
+help_help: "Show this help"

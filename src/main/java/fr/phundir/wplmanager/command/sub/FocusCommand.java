@@ -1,6 +1,7 @@
-package fr.phundir.wplmanager.command;
+package fr.phundir.wplmanager.command.sub;
 
 import fr.phundir.wplmanager.WorldPluginManager;
+import fr.phundir.wplmanager.command.SubCommand;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
@@ -9,27 +10,27 @@ import java.util.Collections;
 import java.util.List;
 
 /**
- * {@code /focus <plugin> <world>}: enables a plugin in one world and disables it everywhere else.
+ * {@code /wpm focus <plugin> [world]}: enables a plugin only in one world
+ * (the sender's current world by default) and disables it everywhere else.
  */
-public final class FocusCommand extends PluginWorldCommand {
+public final class FocusCommand extends SubCommand {
 
     public FocusCommand(WorldPluginManager plugin) {
-        super(plugin, "worldpluginmanager.focus", "/focus <plugin> <world>", 2, 2);
+        super(plugin, "focus", "worldpluginmanager.focus", "<plugin> [world]", 1, 2, "only");
     }
 
     @Override
-    protected void execute(CommandSender sender, String[] args) {
-        World focusedWorld = findWorld(sender, args[1]);
-        if (focusedWorld == null) {
-            return;
-        }
+    public void execute(CommandSender sender, String[] args) {
         Plugin target = findPlugin(sender, args[0]);
         if (target == null) {
             return;
         }
-
         if (target == plugin) {
             messages.send(sender, "cannot_disable_main_plugin", "plugin", target.getName());
+            return;
+        }
+        World focusedWorld = targetWorld(sender, args, 1);
+        if (focusedWorld == null) {
             return;
         }
 
@@ -41,11 +42,11 @@ public final class FocusCommand extends PluginWorldCommand {
     }
 
     @Override
-    protected List<String> completions(int argIndex) {
-        switch (argIndex) {
-            case 0:
-                return pluginNames();
+    public List<String> complete(CommandSender sender, String[] args) {
+        switch (args.length) {
             case 1:
+                return pluginNames();
+            case 2:
                 return worldNames();
             default:
                 return Collections.emptyList();
