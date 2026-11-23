@@ -14,7 +14,8 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - Hides blocked commands from the player's command list and tab completion (Minecraft 1.13+).
 - **Event isolation**: a disabled plugin no longer reacts to what happens in that world (block breaks, damage, chat, movement, inventories, custom events of other plugins...).
 - **Task isolation**: the scheduled tasks of a plugin are paused while it is disabled in every world.
-- **Action blocking**: what a disabled plugin does to a world through the Bukkit API is cancelled, even from its scheduled tasks (teleports, kicks, damage, game mode, potion effects, spawned creatures, opened inventories, forced chat).
+- **Action blocking**: what a disabled plugin does to a world through the Bukkit API is cancelled, even from its scheduled tasks (teleports, kicks, bans, damage, game mode, potion effects, block breaking/placing, explosions, spawned entities, opened inventories, forced chat).
+- **Message blocking** (with ProtocolLib): players no longer receive the chat messages, titles and action bars sent by a plugin disabled in their world.
 - Blocks plugin channel packets using ProtocolLib when a plugin is disabled in a world.
 - `worldpluginmanager.bypass` permission to ignore all restrictions.
 
@@ -28,19 +29,35 @@ A plugin cannot be unloaded for a single world, so WorldPluginManager cuts it of
 | Event listeners | Not called for events happening in that world |
 | Plugin channels (ProtocolLib) | Packets blocked |
 | Scheduled tasks | Paused only when the plugin is disabled in **every** world |
-| Actions through the Bukkit API (teleport, kick, damage, game mode, potion effects, creature spawn, inventory open, forced chat) | Cancelled, wherever they come from in the plugin's code (tasks included) |
+| Actions through the Bukkit API (teleport, kick, damage, game mode, potion effects, block break/place, explosions, entity spawn, inventory open, forced chat) | Cancelled, wherever they come from in the plugin's code (tasks included) |
+| Bans of online players | Undone (the ban recorded just before the cancelled kick is removed) |
+| Messages, titles, action bars (ProtocolLib) | Not delivered to players in that world |
 
 Actions are attributed by looking at the call stack: if code from a plugin disabled in that world is involved, the action is cancelled. This also applies when that plugin goes through another one (e.g. a disabled plugin dispatching a `/kick` command handled by Essentials).
 
 ### Limitations
 
 - **Scheduled tasks have no world.** A repeating task keeps running as long as the plugin is enabled in at least one world. What it does is still blocked in disabled worlds when the action fires a Bukkit event (see the table above).
-- **Some actions fire no Bukkit event and cannot be blocked**: sending a message (`sendMessage`), changing blocks through code (`setType`), giving items, setting health, adding a ban entry (the kick is blocked, the ban is still recorded). Asynchronous teleports (Paper's `teleportAsync`) are not attributed either.
+- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt through `Player#damage` fires no event either. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
+- **Bans**: only bans of online players recorded in the server's ban list are undone. Bans of offline players, and bans stored by ban plugins in their own database, are not.
+- **Messages** require ProtocolLib, and are only attributed when the plugin sends them from its own code (not when they are queued and sent later by the server).
 - **Do not disable library plugins** (Vault, ProtocolLib, PlaceholderAPI...) in a world: every plugin going through them there would have its actions cancelled.
 - **Lifecycle events are always delivered** (join, quit, world change, world load/unload...) so plugins keep consistent data. The list is configurable in `config.yml`.
 - **Events without a world** (server events, console commands, plugin enable/disable...) are always delivered.
 - Task isolation relies on the server's internal scheduler. On servers where it is not compatible, it turns itself off with a warning in the console.
 - Aliases defined in the server's `commands.yml` are not resolved to the plugin they call.
+
+## Compatibility
+
+Tested automatically on Paper with a bot player (commands, events, actions, bans, messages, tasks), with ProtocolLib when a compatible version exists:
+
+| Minecraft | Java | Result |
+|---|---|---|
+| 1.8.8 | 8 | Works, except blocking damage dealt through `Player#damage` (no event on 1.8) |
+| 1.12.2, 1.16.5 | 8 | Works (commands are not hidden from tab completion before 1.13) |
+| 1.17.1 to 1.20.4 | 17 | Works |
+| 1.20.6 to 1.21.11 | 21 | Works |
+| 26.1.2, 26.3 | 25+ | Works (26.3: startup and console commands tested only) |
 
 ## Compilation
 
@@ -82,10 +99,19 @@ isolation:
   tasks: true
 
   # Cancel the actions a plugin performs in a world where it is disabled, even
-  # from its scheduled tasks: teleporting, kicking or damaging players, changing
-  # their game mode or potion effects, spawning creatures, opening inventories,
-  # making players chat. The plugin causing the action is found on the call stack.
+  # from its scheduled tasks: teleporting, kicking, banning or damaging players,
+  # changing their game mode or potion effects, opening inventories, making players
+  # chat, breaking/placing blocks for a player, explosions, spawning entities.
+  # The plugin causing the action is found on the call stack.
   actions: true
+
+  # Stop players from receiving the messages (chat, action bar, titles) sent by a
+  # plugin disabled in their world. Requires ProtocolLib.
+  messages: true
+
+  # Write every blocked action to the console (plugin, action, world, player).
+  # Useful to check what is blocked when setting up the plugin.
+  log-blocked: false
 
   # Events always delivered to plugins, even in worlds where they are disabled.
   # These keep plugins' internal data consistent (players joining/leaving,
