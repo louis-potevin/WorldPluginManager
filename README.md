@@ -17,7 +17,6 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - **Action blocking**: what a disabled plugin does to a world through the Bukkit API is cancelled, even from its scheduled tasks (teleports, kicks, bans, damage, game mode, potion effects, block breaking/placing, explosions, spawned entities, opened inventories, forced chat).
 - **Message and sound blocking** (with ProtocolLib): players no longer receive the chat messages, titles and action bars, nor hear the sounds, of a plugin disabled in their world.
 - Blocks plugin channel packets using ProtocolLib when a plugin is disabled in a world.
-- `worldpluginmanager.bypass` permission to ignore all restrictions.
 
 ### How a plugin is disabled in a world
 
@@ -244,14 +243,13 @@ The previous commands `/enpl`, `/displ`, `/focus` and `/flags` still work: they 
 
 | Permission | Allows | Default |
 |---|---|---|
-| `worldpluginmanager.*` | Every `/wpm` command (not the bypass) | op |
+| `worldpluginmanager.*` | Every `/wpm` command | op |
 | `worldpluginmanager.enpl` | `/wpm enable` | op |
 | `worldpluginmanager.displ` | `/wpm disable` | op |
 | `worldpluginmanager.focus` | `/wpm focus` | op |
 | `worldpluginmanager.flags` | `/wpm status`, `/wpm info` | op |
 | `worldpluginmanager.reset` | `/wpm reset` | op |
 | `worldpluginmanager.reload` | `/wpm reload` | op |
-| `worldpluginmanager.bypass` | Ignore per-world restrictions | nobody, not even operators |
 
 ### License
 
