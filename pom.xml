@@ -5,7 +5,13 @@
 
     <groupId>fr.phundir.wplmanager</groupId>
     <artifactId>WorldPluginManager</artifactId>
-    <version>1.0-SNAPSHOT</version>
+    <version>3.0</version>
+    <name>WorldPluginManager</name>
+    <description>Enable or disable any plugin per world: commands, events, actions, messages and sounds.</description>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
 
     <repositories>
         <repository>
@@ -34,6 +40,24 @@
     </dependencies>
 
     <build>
+        <finalName>${project.artifactId}-${project.version}</finalName>
+        <resources>
+            <!-- plugin.yml takes its version from this pom, so the two can never differ. -->
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+                <includes>
+                    <include>plugin.yml</include>
+                </includes>
+            </resource>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>false</filtering>
+                <excludes>
+                    <exclude>plugin.yml</exclude>
+                </excludes>
+            </resource>
+        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
