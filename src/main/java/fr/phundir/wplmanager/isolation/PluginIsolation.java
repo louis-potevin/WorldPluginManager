@@ -2,6 +2,7 @@ package fr.phundir.wplmanager.isolation;
 
 import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.protocol.MessagePacketBlocker;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -16,7 +17,8 @@ import java.util.Set;
  * Isolates plugins from the worlds where they are disabled, beyond commands:
  * their event listeners (filtered per world) and their scheduled tasks
  * (paused while the plugin is disabled in every world), and the actions it performs
- * through the Bukkit API in those worlds (cancelled).
+ * through the Bukkit API in those worlds (cancelled), including the messages it sends
+ * to players there (with ProtocolLib).
  * <p>
  * Plugins can register listeners and schedule tasks at any time, so the server is rescanned
  * periodically and after every status change.
@@ -29,6 +31,7 @@ public final class PluginIsolation {
     private final TaskIsolator tasks;
     private final ActionGuard actionGuard;
     private final List<Listener> guardListeners = new ArrayList<>();
+    private Runnable unregisterMessageBlocker;
     private BukkitTask scanTask;
 
     public PluginIsolation(Plugin self, WorldStatusStore statusStore, BlockingPolicy policy, IsolationSettings settings) {
@@ -39,12 +42,19 @@ public final class PluginIsolation {
                 ? new ListenerIsolator(self, policy, settings.getAlwaysAllowedEvents())
                 : null;
         this.tasks = settings.isolateTasks() ? new TaskIsolator(self, policy) : null;
-        this.actionGuard = settings.guardActions() ? new ActionGuard(self, policy, statusStore, settings.logBlocked()) : null;
+        this.actionGuard = settings.guardActions() || settings.blockMessages()
+                ? new ActionGuard(self, policy, statusStore, settings.logBlocked())
+                : null;
     }
 
     /** Starts the periodic scan; the first one runs on the next tick, once every plugin is enabled. */
     public void start() {
-        registerActionGuard();
+        if (settings.guardActions()) {
+            registerActionGuard();
+        }
+        if (settings.blockMessages()) {
+            registerMessageBlocker();
+        }
         if (listeners == null && tasks == null) {
             return;
         }
@@ -66,9 +76,6 @@ public final class PluginIsolation {
     }
 
     private void registerActionGuard() {
-        if (actionGuard == null) {
-            return;
-        }
         guardListeners.add(new ActionGuardListener(actionGuard, new BanReverter(self.getLogger())));
         guardListeners.add(new BlockGuardListener(actionGuard));
         if (PotionGuardListener.isSupported()) {
@@ -79,8 +86,21 @@ public final class PluginIsolation {
         }
     }
 
-    /** Stops scanning, unregisters the action guard and restores every listener and task. */
+    /** ProtocolLib classes are only touched inside {@link MessagePacketBlocker}. */
+    private void registerMessageBlocker() {
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
+            self.getLogger().info("ProtocolLib not found: messages from disabled plugins will not be blocked.");
+            return;
+        }
+        unregisterMessageBlocker = MessagePacketBlocker.register(self, actionGuard);
+    }
+
+    /** Stops scanning, unregisters the action and message guards and restores every listener and task. */
     public void stop() {
+        if (unregisterMessageBlocker != null) {
+            unregisterMessageBlocker.run();
+            unregisterMessageBlocker = null;
+        }
         for (Listener listener : guardListeners) {
             HandlerList.unregisterAll(listener);
         }

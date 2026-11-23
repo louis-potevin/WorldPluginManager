@@ -17,6 +17,10 @@ isolation:
   # The plugin causing the action is found on the call stack.
   actions: true
 
+  # Stop players from receiving the messages (chat, action bar, titles) sent by a
+  # plugin disabled in their world. Requires ProtocolLib.
+  messages: true
+
   # Write every blocked action to the console (plugin, action, world, player).
   # Useful to check what is blocked when setting up the plugin.
   log-blocked: false
