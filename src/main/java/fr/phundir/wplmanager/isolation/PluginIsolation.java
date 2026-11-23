@@ -3,7 +3,7 @@ package fr.phundir.wplmanager.isolation;
 import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import fr.phundir.wplmanager.config.WorldStatusStore;
 import fr.phundir.wplmanager.protocol.LegacyDamageReverter;
-import fr.phundir.wplmanager.protocol.MessagePacketBlocker;
+import fr.phundir.wplmanager.protocol.OutgoingPacketBlocker;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.Listener;
@@ -18,8 +18,8 @@ import java.util.Set;
  * Isolates plugins from the worlds where they are disabled, beyond commands:
  * their event listeners (filtered per world) and their scheduled tasks
  * (paused while the plugin is disabled in every world), and the actions it performs
- * through the Bukkit API in those worlds (cancelled), including the messages it sends
- * to players there (with ProtocolLib).
+ * through the Bukkit API in those worlds (cancelled), including the messages and sounds
+ * it sends to players there (with ProtocolLib).
  * <p>
  * Plugins can register listeners and schedule tasks at any time, so the server is rescanned
  * periodically and after every status change.
@@ -32,7 +32,7 @@ public final class PluginIsolation {
     private final TaskIsolator tasks;
     private final ActionGuard actionGuard;
     private final List<Listener> guardListeners = new ArrayList<>();
-    private Runnable unregisterMessageBlocker;
+    private final List<Runnable> packetBlockers = new ArrayList<>();
     private Runnable unregisterLegacyDamageReverter;
     private BukkitTask scanTask;
 
@@ -44,7 +44,7 @@ public final class PluginIsolation {
                 ? new ListenerIsolator(self, policy, settings.getAlwaysAllowedEvents())
                 : null;
         this.tasks = settings.isolateTasks() ? new TaskIsolator(self, policy) : null;
-        this.actionGuard = settings.guardActions() || settings.blockMessages()
+        this.actionGuard = settings.guardActions() || settings.blockMessages() || settings.blockSounds()
                 ? new ActionGuard(self, policy, statusStore, settings.logBlocked())
                 : null;
     }
@@ -54,8 +54,8 @@ public final class PluginIsolation {
         if (settings.guardActions()) {
             registerActionGuard();
         }
-        if (settings.blockMessages()) {
-            registerMessageBlocker();
+        if (settings.blockMessages() || settings.blockSounds()) {
+            registerPacketBlockers();
         }
         if (listeners == null && tasks == null) {
             return;
@@ -105,21 +105,28 @@ public final class PluginIsolation {
         unregisterLegacyDamageReverter = LegacyDamageReverter.register(self, actionGuard);
     }
 
-    /** ProtocolLib classes are only touched inside {@link MessagePacketBlocker}. */
-    private void registerMessageBlocker() {
+    /** ProtocolLib classes are only touched inside {@link OutgoingPacketBlocker}. */
+    private void registerPacketBlockers() {
         if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
-            self.getLogger().info("ProtocolLib not found: messages from disabled plugins will not be blocked.");
+            self.getLogger().info("ProtocolLib not found: messages and sounds from disabled plugins will not be blocked.");
             return;
         }
-        unregisterMessageBlocker = MessagePacketBlocker.register(self, actionGuard);
+        if (settings.blockMessages()) {
+            packetBlockers.add(OutgoingPacketBlocker.register(
+                    self, actionGuard, OutgoingPacketBlocker.MESSAGE_PACKETS, "message"));
+        }
+        if (settings.blockSounds()) {
+            packetBlockers.add(OutgoingPacketBlocker.register(
+                    self, actionGuard, OutgoingPacketBlocker.SOUND_PACKETS, "sound"));
+        }
     }
 
-    /** Stops scanning, unregisters the action and message guards and restores every listener and task. */
+    /** Stops scanning, unregisters the action and packet guards and restores every listener and task. */
     public void stop() {
-        if (unregisterMessageBlocker != null) {
-            unregisterMessageBlocker.run();
-            unregisterMessageBlocker = null;
+        for (Runnable unregister : packetBlockers) {
+            unregister.run();
         }
+        packetBlockers.clear();
         if (unregisterLegacyDamageReverter != null) {
             unregisterLegacyDamageReverter.run();
             unregisterLegacyDamageReverter = null;
