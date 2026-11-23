@@ -109,6 +109,12 @@ public final class WorldStatusStore {
         return plugins;
     }
 
+    /** {@code true} if at least one plugin is disabled in this world (cheap pre-check for hot paths). */
+    public boolean hasDisabledPlugins(String worldName) {
+        Map<String, Boolean> statuses = statusByWorld.get(worldName);
+        return statuses != null && statuses.containsValue(Boolean.FALSE);
+    }
+
     /** Names of the plugins explicitly disabled in at least one world. */
     public Set<String> getDisabledPlugins() {
         Set<String> disabled = new HashSet<>();
