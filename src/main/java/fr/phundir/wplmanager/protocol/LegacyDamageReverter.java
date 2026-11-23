@@ -18,7 +18,7 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * Minecraft 1.8 only: {@code LivingEntity#damage(double)} without a source never fires
+ * Minecraft 1.7 to 1.9 only: {@code LivingEntity#damage(double)} without a source never fires
  * {@code EntityDamageEvent} (the server builds the event but does not call it), so the damage
  * cannot be cancelled. It is undone instead: right after applying it, the server sends the
  * "hurt" entity status packet from within the plugin's call. If a plugin disabled in that world
@@ -29,7 +29,7 @@ import java.util.UUID;
  * <p>
  * Requires ProtocolLib: only reference this class after checking that ProtocolLib is installed.
  */
-@SuppressWarnings("deprecation") // getMaxHealth: the only max health API on 1.8
+@SuppressWarnings("deprecation") // getMaxHealth: the only max health API before 1.9
 public final class LegacyDamageReverter extends PacketAdapter {
     private static final byte HURT_STATUS = 2;
 
@@ -65,7 +65,7 @@ public final class LegacyDamageReverter extends PacketAdapter {
 
     @Override
     public void onPacketSending(PacketEvent event) {
-        if (event.isPlayerTemporary() || event.getPacket().getBytes().read(0) != HURT_STATUS) {
+        if (Packets.hasNoRealPlayer(event) || event.getPacket().getBytes().read(0) != HURT_STATUS) {
             return;
         }
         Entity entity = event.getPacket().getEntityModifier(event).read(0);

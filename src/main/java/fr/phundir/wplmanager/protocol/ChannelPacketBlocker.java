@@ -50,7 +50,7 @@ public final class ChannelPacketBlocker extends PacketAdapter {
     }
 
     private void blockIfDisabled(PacketEvent event) {
-        if (event.isPlayerTemporary()) {
+        if (Packets.hasNoRealPlayer(event)) {
             return;
         }
         try {
@@ -58,8 +58,8 @@ public final class ChannelPacketBlocker extends PacketAdapter {
             if (channel != null && isBlocked(event.getPlayer(), channel)) {
                 event.setCancelled(true);
             }
-        } catch (RuntimeException e) {
-            // Never break the connection over an unexpected packet layout.
+        } catch (RuntimeException | LinkageError e) {
+            // Never break the connection over an unexpected packet layout or ProtocolLib version.
             if (!failureLogged) {
                 failureLogged = true;
                 plugin.getLogger().warning("Could not read a plugin channel packet (" + e
@@ -73,9 +73,13 @@ public final class ChannelPacketBlocker extends PacketAdapter {
      * a String before 1.13, a MinecraftKey from 1.13 to 1.20.1, a payload object since 1.20.2.
      */
     private static String channelOf(PacketContainer packet) {
-        if (packet.getMinecraftKeys().size() > 0) {
-            MinecraftKey key = packet.getMinecraftKeys().read(0);
-            return key == null ? null : key.getFullKey();
+        try {
+            if (packet.getMinecraftKeys().size() > 0) {
+                MinecraftKey key = packet.getMinecraftKeys().read(0);
+                return key == null ? null : key.getFullKey();
+            }
+        } catch (LinkageError e) {
+            // ProtocolLib 3 has no MinecraftKey: channels are plain strings there.
         }
         if (packet.getStrings().size() > 0) {
             return packet.getStrings().read(0);

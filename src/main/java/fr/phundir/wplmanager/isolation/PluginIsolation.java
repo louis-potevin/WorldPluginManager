@@ -80,6 +80,9 @@ public final class PluginIsolation {
     private void registerActionGuard() {
         guardListeners.add(new ActionGuardListener(actionGuard, new BanReverter(self.getLogger())));
         guardListeners.add(new BlockGuardListener(actionGuard));
+        if (ExplosionGuardListener.isSupported()) {
+            guardListeners.add(new ExplosionGuardListener(actionGuard));
+        }
         if (PotionGuardListener.isSupported()) {
             guardListeners.add(new PotionGuardListener(actionGuard));
         }
@@ -90,16 +93,16 @@ public final class PluginIsolation {
     }
 
     /**
-     * On 1.8, damage dealt without a source fires no event and has to be undone through
+     * Up to 1.9, damage dealt without a source fires no event and has to be undone through
      * ProtocolLib instead. The version is checked here: LegacyDamageReverter cannot even be
      * loaded without ProtocolLib.
      */
     private void registerLegacyDamageReverter() {
-        if (!Bukkit.getBukkitVersion().startsWith("1.8")) {
+        if (!Bukkit.getBukkitVersion().matches("1\\.[789]([.-].*)?")) {
             return;
         }
         if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
-            self.getLogger().info("ProtocolLib not found: on 1.8, damage dealt by disabled plugins cannot be undone.");
+            self.getLogger().info("ProtocolLib not found: damage dealt by disabled plugins cannot be undone before 1.10.");
             return;
         }
         unregisterLegacyDamageReverter = LegacyDamageReverter.register(self, actionGuard);

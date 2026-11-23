@@ -71,7 +71,7 @@ public final class OutgoingPacketBlocker extends PacketAdapter {
 
     @Override
     public void onPacketSending(PacketEvent event) {
-        if (event.isPlayerTemporary()) {
+        if (Packets.hasNoRealPlayer(event)) {
             return;
         }
         Player player = event.getPlayer();

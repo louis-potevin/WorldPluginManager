@@ -5,7 +5,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -19,6 +18,7 @@ import java.util.Locale;
  * placed on behalf of a player, explosions it creates, and entities it spawns
  * (creatures, falling blocks, primed TNT, dropped items...).
  * <p>
+ * Sourceless explosions are handled by {@link ExplosionGuardListener} (1.8.3+).
  * Direct block changes ({@code Block#setType}, {@code BlockState#update}) fire no event
  * and cannot be blocked.
  */
@@ -44,12 +44,6 @@ final class BlockGuardListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
         guard.cancelIfBlocked(event, event.getLocation().getWorld(), null, "explosion");
-    }
-
-    /** E.g. {@code World#createExplosion} without a source. */
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onBlockExplode(BlockExplodeEvent event) {
-        guard.cancelIfBlocked(event, event.getBlock().getWorld(), null, "explosion");
     }
 
     /**
