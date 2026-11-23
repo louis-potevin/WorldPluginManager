@@ -1,5 +1,5 @@
 name: WorldPluginManager
-main: fr.P2W.wplmanager.WorldPluginManager
+main: fr.phundir.wplmanager.WorldPluginManager
 version: 2.0
 softdepend: [ProtocolLib]
 commands:

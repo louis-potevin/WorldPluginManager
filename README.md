@@ -48,14 +48,19 @@ plugin_not_found: "&cPlugin {plugin} not found."
 world_not_found: "&cThe world {world} does not exist."
 cannot_disable_main_plugin: "&cYou cannot disable the main plugin {plugin} in any world."
 no_permission: "&cYou do not have permission to use this command."
+usage: "&cUsage: {usage}"
+flags_header: "&6Plugins for world {world}:"
+flags_empty: "&eNo plugin is configured for the world {world}."
 ```
+
+Keys missing from your `messages.yml` automatically fall back to the default values bundled with the plugin.
 ### `plugin.yml`
 
 Reference file listing all commands and their permissions. You normally do not need to modify it.
 
 ```yaml
 name: WorldPluginManager
-main: fr.P2W.wplmanager.WorldPluginManager
+main: fr.phundir.wplmanager.WorldPluginManager
 version: 2.0
 commands:
   displ:
