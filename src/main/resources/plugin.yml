@@ -2,6 +2,8 @@ name: WorldPluginManager
 main: fr.phundir.wplmanager.WorldPluginManager
 version: 2.0
 softdepend: [ProtocolLib]
+# Ignored before 1.13; on 1.13+ it avoids Paper's slow legacy-plugin mode.
+api-version: '1.13'
 commands:
   wpm:
     description: Manages which plugins are enabled in each world.
