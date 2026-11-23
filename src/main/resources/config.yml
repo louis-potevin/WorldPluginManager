@@ -11,9 +11,10 @@ isolation:
   tasks: true
 
   # Cancel the actions a plugin performs in a world where it is disabled, even
-  # from its scheduled tasks: teleporting, kicking or damaging players, changing
-  # their game mode or potion effects, spawning creatures, opening inventories,
-  # making players chat. The plugin causing the action is found on the call stack.
+  # from its scheduled tasks: teleporting, kicking, banning or damaging players,
+  # changing their game mode or potion effects, opening inventories, making players
+  # chat, breaking/placing blocks for a player, explosions, spawning entities.
+  # The plugin causing the action is found on the call stack.
   actions: true
 
   # Write every blocked action to the console (plugin, action, world, player).

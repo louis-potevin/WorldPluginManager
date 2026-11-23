@@ -70,6 +70,7 @@ public final class PluginIsolation {
             return;
         }
         guardListeners.add(new ActionGuardListener(actionGuard, new BanReverter(self.getLogger())));
+        guardListeners.add(new BlockGuardListener(actionGuard));
         if (PotionGuardListener.isSupported()) {
             guardListeners.add(new PotionGuardListener(actionGuard));
         }

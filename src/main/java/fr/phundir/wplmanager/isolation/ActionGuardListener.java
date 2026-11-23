@@ -5,7 +5,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -17,7 +16,7 @@ import org.bukkit.plugin.Plugin;
 /**
  * Cancels the actions a disabled plugin performs in a world through the Bukkit API,
  * from anywhere in its code (scheduled tasks included): teleporting, kicking, damaging,
- * changing a game mode, spawning creatures, opening inventories, making a player chat.
+ * changing a game mode, opening inventories, making a player chat.
  * Bans of online players are undone along with the kick that follows them.
  * <p>
  * Runs at the lowest priority so other plugins never see the cancelled action.
@@ -56,14 +55,6 @@ final class ActionGuardListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
         guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer(), "game mode change");
-    }
-
-    /** Only creatures spawned through the API (World#spawnEntity...), not natural spawns. */
-    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
-    public void onCreatureSpawn(CreatureSpawnEvent event) {
-        if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.CUSTOM) {
-            guard.cancelIfBlocked(event, event.getLocation().getWorld(), null, "creature spawn");
-        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
