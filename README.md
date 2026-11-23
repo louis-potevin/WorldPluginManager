@@ -38,7 +38,7 @@ Actions are attributed by looking at the call stack: if code from a plugin disab
 ### Limitations
 
 - **Scheduled tasks have no world.** A repeating task keeps running as long as the plugin is enabled in at least one world. What it does is still blocked in disabled worlds when the action fires a Bukkit event (see the table above).
-- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt through `Player#damage` fires no event either. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
+- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt without a source (`LivingEntity#damage(double)`) fires no event either: it is undone right after being applied, which requires ProtocolLib. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
 - **Bans**: only bans of online players recorded in the server's ban list are undone. Bans of offline players, and bans stored by ban plugins in their own database, are not.
 - **Messages** require ProtocolLib, and are only attributed when the plugin sends them from its own code (not when they are queued and sent later by the server).
 - **Do not disable library plugins** (Vault, ProtocolLib, PlaceholderAPI...) in a world: every plugin going through them there would have its actions cancelled.
@@ -53,7 +53,7 @@ Tested automatically on Paper with a bot player (commands, events, actions, bans
 
 | Minecraft | Java | Result |
 |---|---|---|
-| 1.8.8 | 8 | Works, except blocking damage dealt through `Player#damage` (no event on 1.8) |
+| 1.8.8 | 8 | Works (undoing damage dealt without a source requires ProtocolLib) |
 | 1.12.2, 1.16.5 | 8 | Works (commands are not hidden from tab completion before 1.13) |
 | 1.17.1 to 1.20.4 | 17 | Works |
 | 1.20.6 to 1.21.11 | 21 | Works |
