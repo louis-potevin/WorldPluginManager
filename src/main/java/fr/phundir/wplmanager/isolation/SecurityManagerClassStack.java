@@ -10,12 +10,12 @@ import java.util.function.Predicate;
 final class SecurityManagerClassStack extends SecurityManager implements ClassStack {
 
     @Override
-    public boolean anyMatch(Predicate<Class<?>> test) {
+    public Class<?> findFirst(Predicate<Class<?>> test) {
         for (Class<?> type : getClassContext()) {
             if (test.test(type)) {
-                return true;
+                return type;
             }
         }
-        return false;
+        return null;
     }
 }

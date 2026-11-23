@@ -39,7 +39,7 @@ public final class PluginIsolation {
                 ? new ListenerIsolator(self, policy, settings.getAlwaysAllowedEvents())
                 : null;
         this.tasks = settings.isolateTasks() ? new TaskIsolator(self, policy) : null;
-        this.actionGuard = settings.guardActions() ? new ActionGuard(self, policy, statusStore) : null;
+        this.actionGuard = settings.guardActions() ? new ActionGuard(self, policy, statusStore, settings.logBlocked()) : null;
     }
 
     /** Starts the periodic scan; the first one runs on the next tick, once every plugin is enabled. */

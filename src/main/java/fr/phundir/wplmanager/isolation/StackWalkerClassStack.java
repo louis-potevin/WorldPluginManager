@@ -10,7 +10,11 @@ final class StackWalkerClassStack implements ClassStack {
     private static final StackWalker WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
     @Override
-    public boolean anyMatch(Predicate<Class<?>> test) {
-        return WALKER.walk(frames -> frames.anyMatch(frame -> test.test(frame.getDeclaringClass())));
+    public Class<?> findFirst(Predicate<Class<?>> test) {
+        return WALKER.walk(frames -> frames
+                .<Class<?>>map(StackWalker.StackFrame::getDeclaringClass)
+                .filter(test)
+                .findFirst()
+                .orElse(null));
     }
 }

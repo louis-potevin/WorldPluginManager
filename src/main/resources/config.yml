@@ -16,6 +16,10 @@ isolation:
   # making players chat. The plugin causing the action is found on the call stack.
   actions: true
 
+  # Write every blocked action to the console (plugin, action, world, player).
+  # Useful to check what is blocked when setting up the plugin.
+  log-blocked: false
+
   # Events always delivered to plugins, even in worlds where they are disabled.
   # These keep plugins' internal data consistent (players joining/leaving,
   # moving between worlds, worlds loading/unloading). Use event class names.

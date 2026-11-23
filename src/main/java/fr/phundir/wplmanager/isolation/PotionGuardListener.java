@@ -32,7 +32,7 @@ final class PotionGuardListener implements Listener {
     public void onPotionEffect(EntityPotionEffectEvent event) {
         if (event.getCause() == EntityPotionEffectEvent.Cause.PLUGIN) {
             Entity entity = event.getEntity();
-            guard.cancelIfBlocked(event, entity.getWorld(), entity instanceof Player ? (Player) entity : null);
+            guard.cancelIfBlocked(event, entity.getWorld(), entity instanceof Player ? (Player) entity : null, "potion effect");
         }
     }
 }

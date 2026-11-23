@@ -24,13 +24,17 @@ final class CallerPlugins {
         this.self = self;
     }
 
-    /** {@code true} if a plugin other than WorldPluginManager on the current stack matches {@code test}. */
-    boolean anyOnStack(Predicate<Plugin> test) {
+    /**
+     * @return the innermost plugin other than WorldPluginManager on the current stack
+     *         that matches {@code test}, or {@code null}
+     */
+    Plugin findOnStack(Predicate<Plugin> test) {
         Map<ClassLoader, Plugin> loaders = pluginsByLoader();
-        return stack.anyMatch(type -> {
+        Class<?> found = stack.findFirst(type -> {
             Plugin owner = loaders.get(type.getClassLoader());
             return owner != null && owner != self && test.test(owner);
         });
+        return found == null ? null : loaders.get(found.getClassLoader());
     }
 
     /** Rebuilt when the number of plugins changes (plugin loaded or unloaded at runtime). */

@@ -30,30 +30,30 @@ final class ActionGuardListener implements Listener {
     /** A plugin acting on a player is judged by the world the player is leaving. */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onTeleport(PlayerTeleportEvent event) {
-        guard.cancelIfBlocked(event, event.getFrom().getWorld(), event.getPlayer());
+        guard.cancelIfBlocked(event, event.getFrom().getWorld(), event.getPlayer(), "teleport");
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onKick(PlayerKickEvent event) {
-        guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer());
+        guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer(), "kick");
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onDamage(EntityDamageEvent event) {
         Entity entity = event.getEntity();
-        guard.cancelIfBlocked(event, entity.getWorld(), entity instanceof Player ? (Player) entity : null);
+        guard.cancelIfBlocked(event, entity.getWorld(), entity instanceof Player ? (Player) entity : null, "damage");
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onGameModeChange(PlayerGameModeChangeEvent event) {
-        guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer());
+        guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer(), "game mode change");
     }
 
     /** Only creatures spawned through the API (World#spawnEntity...), not natural spawns. */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onCreatureSpawn(CreatureSpawnEvent event) {
         if (event.getSpawnReason() == CreatureSpawnEvent.SpawnReason.CUSTOM) {
-            guard.cancelIfBlocked(event, event.getLocation().getWorld(), null);
+            guard.cancelIfBlocked(event, event.getLocation().getWorld(), null, "creature spawn");
         }
     }
 
@@ -61,7 +61,7 @@ final class ActionGuardListener implements Listener {
     public void onInventoryOpen(InventoryOpenEvent event) {
         if (event.getPlayer() instanceof Player) {
             Player player = (Player) event.getPlayer();
-            guard.cancelIfBlocked(event, player.getWorld(), player);
+            guard.cancelIfBlocked(event, player.getWorld(), player, "inventory open");
         }
     }
 
@@ -69,7 +69,7 @@ final class ActionGuardListener implements Listener {
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onForcedChat(AsyncPlayerChatEvent event) {
         if (!event.isAsynchronous()) {
-            guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer());
+            guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer(), "forced chat");
         }
     }
 }
