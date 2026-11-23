@@ -13,6 +13,8 @@ import fr.phundir.wplmanager.command.sub.SetStatusCommand;
 import fr.phundir.wplmanager.command.sub.StatusCommand;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.isolation.IsolationSettings;
+import fr.phundir.wplmanager.isolation.PluginIsolation;
 import fr.phundir.wplmanager.listener.CommandBlockListener;
 import fr.phundir.wplmanager.listener.CommandVisibilityListener;
 import fr.phundir.wplmanager.protocol.ChannelPacketBlocker;
@@ -29,6 +31,7 @@ public final class WorldPluginManager extends JavaPlugin {
     private Messages messages;
     private WorldStatusStore statusStore;
     private BlockingPolicy blockingPolicy;
+    private PluginIsolation isolation;
     /** {@code null} on servers older than 1.13. */
     private CommandVisibilityListener commandVisibility;
 
@@ -51,12 +54,16 @@ public final class WorldPluginManager extends JavaPlugin {
                 new CommandBlockListener(messages, commandResolver, blockingPolicy), this);
         registerCommandVisibility(commandResolver);
         registerPacketBlocker();
+        startIsolation();
 
         getLogger().info("Plugin enabled!");
     }
 
     @Override
     public void onDisable() {
+        if (isolation != null) {
+            isolation.stop();
+        }
         if (statusStore != null) {
             statusStore.save();
         }
@@ -80,6 +87,7 @@ public final class WorldPluginManager extends JavaPlugin {
         if (commandVisibility != null) {
             commandVisibility.refreshAll();
         }
+        isolation.refresh();
     }
 
     /** Reloads config.yml and messages.yml from disk, discarding unsaved changes. */
@@ -87,9 +95,17 @@ public final class WorldPluginManager extends JavaPlugin {
         reloadConfig();
         statusStore.load();
         messages.load();
+        isolation.stop();
+        startIsolation();
         if (commandVisibility != null) {
             commandVisibility.refreshAll();
         }
+    }
+
+    private void startIsolation() {
+        isolation = new PluginIsolation(this, statusStore, blockingPolicy,
+                IsolationSettings.from(getConfig().getConfigurationSection("isolation")));
+        isolation.start();
     }
 
     private void registerCommands() {
