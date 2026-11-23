@@ -28,10 +28,16 @@ public final class FocusCommand extends PluginWorldCommand {
             return;
         }
 
+        if (target == plugin) {
+            messages.send(sender, "cannot_disable_main_plugin", "plugin", target.getName());
+            return;
+        }
+
         for (String worldName : worldNames()) {
-            applyStatus(sender, target, worldName, worldName.equals(focusedWorld.getName()));
+            statusStore.setEnabled(target.getName(), worldName, worldName.equals(focusedWorld.getName()));
         }
         plugin.onStatusesChanged();
+        messages.send(sender, "plugin_focused", "plugin", target.getName(), "world", focusedWorld.getName());
     }
 
     @Override
