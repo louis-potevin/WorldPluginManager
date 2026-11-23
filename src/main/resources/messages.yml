@@ -53,6 +53,21 @@ gui_plugin_locked_name: "&7{plugin}"
 gui_plugin_locked_lore: "&8Cannot be disabled"
 gui_enable_all_world: "&aEnable every plugin here"
 gui_enable_all_world_lore: "&7Removes every restriction in {world}"
+gui_view_plugins: "&bView by plugin"
+gui_view_worlds: "&bView by world"
+gui_title_plugins: "Plugins"
+gui_title_plugin: "Plugin: {plugin}"
+gui_plugin_name: "&f{plugin}"
+gui_plugin_lore:
+  - "&7Enabled in {enabled}/{worlds} worlds"
+  - "&eClick to manage its worlds"
+gui_world_enabled_name: "&a{world}"
+gui_world_disabled_name: "&c{world}"
+gui_plugin_world_entry_lore:
+  - "&eClick: enable/disable {plugin} here"
+  - "&eShift-click: enable {plugin} only here"
+gui_enable_everywhere: "&aEnable in every world"
+gui_enable_everywhere_lore: "&7Removes every restriction of {plugin}"
 
 # /wpm help
 help_header: "&6&lWorldPluginManager &7- commands"

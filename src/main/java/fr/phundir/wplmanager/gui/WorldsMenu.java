@@ -30,6 +30,8 @@ public final class WorldsMenu extends Menu {
                 world -> item(iconOf(world), "gui_world_name", "gui_world_lore",
                         "world", world.getName(), "disabled", String.valueOf(disabledCount(world))),
                 (world, shift) -> menus.open(viewer, new WorldPluginsMenu(menus, viewer, world.getName(), this)));
+        set(SLOT_SWITCH, item(MenuItems.Icon.SWITCH_VIEW, "gui_view_plugins", null),
+                shift -> menus.open(viewer, new PluginsMenu(menus, viewer)));
     }
 
     /** Compared by name: the Environment constants differ between versions. */

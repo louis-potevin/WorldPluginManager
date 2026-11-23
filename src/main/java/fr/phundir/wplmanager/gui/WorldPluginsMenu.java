@@ -87,14 +87,4 @@ public final class WorldPluginsMenu extends Menu {
         plugin.onStatusesChanged();
         refresh();
     }
-
-    private int enabledWorlds(String pluginName) {
-        int count = 0;
-        for (World world : Bukkit.getWorlds()) {
-            if (statusStore.isEnabled(pluginName, world.getName())) {
-                count++;
-            }
-        }
-        return count;
-    }
 }

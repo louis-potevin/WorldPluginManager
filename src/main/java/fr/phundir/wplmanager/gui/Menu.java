@@ -4,6 +4,7 @@ import fr.phundir.wplmanager.WorldPluginManager;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
 import org.bukkit.Bukkit;
+import org.bukkit.World;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
@@ -143,6 +144,17 @@ public abstract class Menu {
     /** Adds a "back" button opening {@code previous}. */
     protected void drawBack(Menu previous) {
         set(SLOT_BACK, item(MenuItems.Icon.BACK, "gui_back", null), shift -> menus.open(viewer, previous));
+    }
+
+    /** Number of loaded worlds where the plugin is enabled. */
+    protected int enabledWorlds(String pluginName) {
+        int count = 0;
+        for (World world : Bukkit.getWorlds()) {
+            if (statusStore.isEnabled(pluginName, world.getName())) {
+                count++;
+            }
+        }
+        return count;
     }
 
     /** Checks a permission, telling the viewer when it is missing. */
