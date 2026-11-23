@@ -1,2 +1,31 @@
-# Configuration par défaut pour WorldPluginManager
+# WorldPluginManager configuration
+
+# Isolation of plugins that are disabled in some worlds.
+isolation:
+  # Stop the event listeners of a plugin from running for events that happen
+  # in a world where the plugin is disabled (block breaks, damage, chat, moves...).
+  events: true
+
+  # Pause the scheduled tasks of a plugin while it is disabled in EVERY world.
+  # Tasks have no world, so they cannot be filtered per world.
+  tasks: true
+
+  # Events always delivered to plugins, even in worlds where they are disabled.
+  # These keep plugins' internal data consistent (players joining/leaving,
+  # moving between worlds, worlds loading/unloading). Use event class names.
+  always-allowed-events:
+    - PlayerJoinEvent
+    - PlayerQuitEvent
+    - PlayerKickEvent
+    - PlayerChangedWorldEvent
+    - WorldInitEvent
+    - WorldLoadEvent
+    - WorldUnloadEvent
+    - WorldSaveEvent
+
+  # How often (in ticks, 20 = 1 second) to look for listeners and tasks
+  # registered by plugins after startup.
+  scan-interval: 100
+
+# Managed by the /wpm commands: world -> plugin -> enabled.
 pluginWorldStatus: {}
