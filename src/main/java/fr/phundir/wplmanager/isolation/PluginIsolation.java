@@ -2,6 +2,7 @@ package fr.phundir.wplmanager.isolation;
 
 import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.protocol.LegacyDamageReverter;
 import fr.phundir.wplmanager.protocol.MessagePacketBlocker;
 import org.bukkit.Bukkit;
 import org.bukkit.event.HandlerList;
@@ -32,6 +33,7 @@ public final class PluginIsolation {
     private final ActionGuard actionGuard;
     private final List<Listener> guardListeners = new ArrayList<>();
     private Runnable unregisterMessageBlocker;
+    private Runnable unregisterLegacyDamageReverter;
     private BukkitTask scanTask;
 
     public PluginIsolation(Plugin self, WorldStatusStore statusStore, BlockingPolicy policy, IsolationSettings settings) {
@@ -84,6 +86,23 @@ public final class PluginIsolation {
         for (Listener listener : guardListeners) {
             Bukkit.getPluginManager().registerEvents(listener, self);
         }
+        registerLegacyDamageReverter();
+    }
+
+    /**
+     * On 1.8, damage dealt without a source fires no event and has to be undone through
+     * ProtocolLib instead. The version is checked here: LegacyDamageReverter cannot even be
+     * loaded without ProtocolLib.
+     */
+    private void registerLegacyDamageReverter() {
+        if (!Bukkit.getBukkitVersion().startsWith("1.8")) {
+            return;
+        }
+        if (Bukkit.getPluginManager().getPlugin("ProtocolLib") == null) {
+            self.getLogger().info("ProtocolLib not found: on 1.8, damage dealt by disabled plugins cannot be undone.");
+            return;
+        }
+        unregisterLegacyDamageReverter = LegacyDamageReverter.register(self, actionGuard);
     }
 
     /** ProtocolLib classes are only touched inside {@link MessagePacketBlocker}. */
@@ -100,6 +119,10 @@ public final class PluginIsolation {
         if (unregisterMessageBlocker != null) {
             unregisterMessageBlocker.run();
             unregisterMessageBlocker = null;
+        }
+        if (unregisterLegacyDamageReverter != null) {
+            unregisterLegacyDamageReverter.run();
+            unregisterLegacyDamageReverter = null;
         }
         for (Listener listener : guardListeners) {
             HandlerList.unregisterAll(listener);
