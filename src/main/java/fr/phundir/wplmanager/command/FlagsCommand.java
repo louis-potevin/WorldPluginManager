@@ -1,6 +1,7 @@
 package fr.phundir.wplmanager.command;
 
 import fr.phundir.wplmanager.WorldPluginManager;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -19,10 +20,11 @@ public final class FlagsCommand extends PluginWorldCommand {
 
     @Override
     protected void execute(CommandSender sender, String[] args) {
-        String worldName = args[0];
-        if (findWorld(sender, worldName) == null) {
+        World world = findWorld(sender, args[0]);
+        if (world == null) {
             return;
         }
+        String worldName = world.getName();
 
         if (args.length == 2) {
             showPluginStatus(sender, worldName, args[1]);

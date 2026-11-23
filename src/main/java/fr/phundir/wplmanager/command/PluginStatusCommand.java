@@ -1,6 +1,7 @@
 package fr.phundir.wplmanager.command;
 
 import fr.phundir.wplmanager.WorldPluginManager;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -24,18 +25,16 @@ public final class PluginStatusCommand extends PluginWorldCommand {
 
     @Override
     protected void execute(CommandSender sender, String[] args) {
-        String pluginName = args[0];
-        String worldName = args[1];
-
-        if (findWorld(sender, worldName) == null) {
+        World world = findWorld(sender, args[1]);
+        if (world == null) {
             return;
         }
-        Plugin target = findPlugin(sender, pluginName);
+        Plugin target = findPlugin(sender, args[0]);
         if (target == null) {
             return;
         }
 
-        applyStatus(sender, target, worldName, enable);
+        applyStatus(sender, target, world.getName(), enable);
         statusStore.save();
     }
 

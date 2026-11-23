@@ -3,6 +3,7 @@ package fr.phundir.wplmanager.command;
 import fr.phundir.wplmanager.WorldPluginManager;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.util.Plugins;
 import org.bukkit.Bukkit;
 import org.bukkit.World;
 import org.bukkit.command.Command;
@@ -69,7 +70,10 @@ public abstract class PluginWorldCommand implements TabExecutor {
         return StringUtil.copyPartialMatches(typed, completions(args.length - 1), new ArrayList<String>());
     }
 
-    /** Returns the world, or {@code null} after notifying the sender. */
+    /**
+     * Returns the world, or {@code null} after notifying the sender.
+     * Always use {@link World#getName()} afterwards: the lookup ignores case, the stored statuses do not.
+     */
     protected World findWorld(CommandSender sender, String worldName) {
         World world = Bukkit.getWorld(worldName);
         if (world == null) {
@@ -78,9 +82,9 @@ public abstract class PluginWorldCommand implements TabExecutor {
         return world;
     }
 
-    /** Returns the plugin, or {@code null} after notifying the sender. */
+    /** Returns the plugin (name matched ignoring case), or {@code null} after notifying the sender. */
     protected Plugin findPlugin(CommandSender sender, String pluginName) {
-        Plugin target = Bukkit.getPluginManager().getPlugin(pluginName);
+        Plugin target = Plugins.findByName(pluginName);
         if (target == null) {
             messages.send(sender, "plugin_not_found", "plugin", pluginName);
         }

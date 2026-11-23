@@ -1,6 +1,7 @@
 package fr.phundir.wplmanager.command;
 
 import fr.phundir.wplmanager.WorldPluginManager;
+import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.Plugin;
 
@@ -18,19 +19,17 @@ public final class FocusCommand extends PluginWorldCommand {
 
     @Override
     protected void execute(CommandSender sender, String[] args) {
-        String pluginName = args[0];
-        String focusedWorld = args[1];
-
-        if (findWorld(sender, focusedWorld) == null) {
+        World focusedWorld = findWorld(sender, args[1]);
+        if (focusedWorld == null) {
             return;
         }
-        Plugin target = findPlugin(sender, pluginName);
+        Plugin target = findPlugin(sender, args[0]);
         if (target == null) {
             return;
         }
 
         for (String worldName : worldNames()) {
-            applyStatus(sender, target, worldName, worldName.equals(focusedWorld));
+            applyStatus(sender, target, worldName, worldName.equals(focusedWorld.getName()));
         }
         statusStore.save();
     }

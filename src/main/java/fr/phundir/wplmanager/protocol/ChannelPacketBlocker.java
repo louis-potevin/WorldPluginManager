@@ -7,7 +7,7 @@ import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
 import com.comphenix.protocol.wrappers.MinecraftKey;
 import fr.phundir.wplmanager.config.WorldStatusStore;
-import org.bukkit.Bukkit;
+import fr.phundir.wplmanager.util.Plugins;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
@@ -52,7 +52,8 @@ public final class ChannelPacketBlocker extends PacketAdapter {
         int separator = key.indexOf(':');
         String namespace = separator >= 0 ? key.substring(0, separator) : key;
 
-        Plugin owner = Bukkit.getPluginManager().getPlugin(namespace);
+        // Channel namespaces are lowercase, plugin names usually are not.
+        Plugin owner = Plugins.findByName(namespace);
         return owner != null && !statusStore.isEnabled(owner.getName(), player.getWorld().getName());
     }
 }
