@@ -39,7 +39,7 @@ Actions are attributed by looking at the call stack: if code from a plugin disab
 ### Limitations
 
 - **Scheduled tasks have no world.** A repeating task keeps running as long as the plugin is enabled in at least one world. What it does is still blocked in disabled worlds when the action fires a Bukkit event (see the table above).
-- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt without a source (`LivingEntity#damage(double)`) fires no event either: it is undone right after being applied (health restored, hurt animation and sound dropped), which requires ProtocolLib. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
+- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. Up to 1.9, damage dealt without a source (`LivingEntity#damage(double)`) fires no event either: it is undone right after being applied (health restored, hurt animation and sound dropped), which requires ProtocolLib. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
 - **Bans**: only bans of online players recorded in the server's ban list are undone. Bans of offline players, and bans stored by ban plugins in their own database, are not.
 - **Messages and sounds** require ProtocolLib, and are only attributed when the plugin sends them from its own code (not when they are queued and sent later by the server).
 - **Do not disable library plugins** (Vault, ProtocolLib, PlaceholderAPI...) in a world: every plugin going through them there would have its actions cancelled.
@@ -50,19 +50,33 @@ Actions are attributed by looking at the call stack: if code from a plugin disab
 
 ## Compatibility
 
-Tested automatically on Paper with a bot player (commands, events, actions, bans, messages, tasks), with ProtocolLib when a compatible version exists:
+Runs on **Minecraft 1.7.10 to 26.3**, on Java 8 and later. Tested on Paper; Spigot and other Paper forks use the same API and should work, but have not been tested. Folia is not supported. Features that need an API missing from an older version turn themselves off on that version instead of failing.
 
-| Minecraft | Java | Result |
-|---|---|---|
-| 1.8.8 | 8 | Works (undoing damage dealt without a source requires ProtocolLib) |
-| 1.12.2, 1.16.5 | 8 | Works (commands are not hidden from tab completion before 1.13) |
-| 1.17.1 to 1.20.4 | 17 | Works |
-| 1.20.6 to 1.21.11 | 21 | Works |
-| 26.1.2, 26.3 | 25+ | Works (26.3: startup and console commands tested only) |
+Every version below was tested automatically on Paper with a bot player (commands, events, actions, bans, messages, sounds, tasks), with ProtocolLib when a compatible version exists:
+
+| Minecraft | Java | ProtocolLib tested | Result |
+|---|---|---|---|
+| 1.7.10 | 8 | 3.6.5 | Works |
+| 1.8.8 to 1.12.2 | 8 | 4.8.0 | Works |
+| 1.13.2 to 1.16.5 | 8 | 4.8.0 | Works |
+| 1.17.1, 1.18.2 | 17 | 4.8.0 | Works |
+| 1.19.4 to 1.20.4 | 17 | 5.0.0, 5.2.0 | Works |
+| 1.20.6 to 1.21.11 | 21 | 5.3.0 to dev build | Works |
+| 26.1.2 to 26.3 | 25+ | none available yet | Works, without message and sound blocking (26.2 and 26.3: startup and console tested only) |
+
+What depends on the version:
+
+| Feature | Available from |
+|---|---|
+| Hiding blocked commands from tab completion | 1.13 |
+| Blocking potion effects added by plugins | 1.13 |
+| Blocking sourceless explosions | 1.8.3 |
+| Undoing sourceless damage (`damage(double)`, which fires no event up to 1.9) | needs ProtocolLib on 1.7 to 1.9 |
+| Blocking messages, sounds and plugin channels | needs ProtocolLib |
 
 ## Compilation
 
-WorldPluginManager is built with **Maven** and requires **JDK 8** or later.
+WorldPluginManager is built with **Maven** and requires **JDK 8** or later. The plugin itself targets Java 8, so a single jar runs on every supported version.
 
 ```bash
 git clone https://github.com/P2Wdisabled/WorldPluginManager.git
