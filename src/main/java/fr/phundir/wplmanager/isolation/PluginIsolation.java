@@ -10,9 +10,10 @@ import java.util.Set;
 
 /**
  * Isolates plugins from the worlds where they are disabled, beyond commands:
- * their event listeners (and, see {@link #refresh()}, their scheduled tasks).
+ * their event listeners (filtered per world) and their scheduled tasks
+ * (paused while the plugin is disabled in every world).
  * <p>
- * Plugins can register listeners at any time, so the server is rescanned
+ * Plugins can register listeners and schedule tasks at any time, so the server is rescanned
  * periodically and after every status change.
  */
 public final class PluginIsolation {
@@ -20,6 +21,7 @@ public final class PluginIsolation {
     private final WorldStatusStore statusStore;
     private final IsolationSettings settings;
     private final ListenerIsolator listeners;
+    private final TaskIsolator tasks;
     private BukkitTask scanTask;
 
     public PluginIsolation(Plugin self, WorldStatusStore statusStore, BlockingPolicy policy, IsolationSettings settings) {
@@ -29,17 +31,18 @@ public final class PluginIsolation {
         this.listeners = settings.isolateEvents()
                 ? new ListenerIsolator(self, policy, settings.getAlwaysAllowedEvents())
                 : null;
+        this.tasks = settings.isolateTasks() ? new TaskIsolator(self, policy) : null;
     }
 
     /** Starts the periodic scan; the first one runs on the next tick, once every plugin is enabled. */
     public void start() {
-        if (listeners == null) {
+        if (listeners == null && tasks == null) {
             return;
         }
         scanTask = Bukkit.getScheduler().runTaskTimer(self, this::refresh, 1L, settings.getScanInterval());
     }
 
-    /** Applies the current statuses to listeners registered since the last scan. */
+    /** Applies the current statuses to listeners and tasks registered since the last scan. */
     public void refresh() {
         Set<String> restricted = statusStore.getDisabledPlugins();
         if (restricted.isEmpty()) {
@@ -48,9 +51,12 @@ public final class PluginIsolation {
         if (listeners != null) {
             listeners.wrap(restricted);
         }
+        if (tasks != null) {
+            tasks.wrap(restricted);
+        }
     }
 
-    /** Stops scanning and restores every listener to its original state. */
+    /** Stops scanning and restores every listener and task to its original state. */
     public void stop() {
         if (scanTask != null) {
             scanTask.cancel();
@@ -58,6 +64,9 @@ public final class PluginIsolation {
         }
         if (listeners != null) {
             listeners.restore();
+        }
+        if (tasks != null) {
+            tasks.restore();
         }
     }
 }
