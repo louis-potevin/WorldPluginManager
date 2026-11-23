@@ -8,6 +8,7 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - Focus a plugin to only be enabled in a specific world.
 - View the status of plugins per world (`/wpm status`) or per plugin (`/wpm info`).
 - A single `/wpm` command with short aliases, clickable help, and context-aware tab completion.
+- A chest menu (`/wpm gui`) to manage everything with clicks, by world or by plugin.
 - Customizable messages through `messages.yml` with support for placeholders.
 - Permission-based command execution.
 - Blocks the commands of a disabled plugin, detected automatically from the server's command map: commands declared in `plugin.yml`, commands registered at runtime (e.g. WorldEdit's `//set`), aliases and namespaced labels (`worldedit:wand`).
@@ -61,7 +62,7 @@ Every version below was tested automatically on Paper with a bot player (command
 | 1.17.1, 1.18.2 | 17 | 4.8.0 | Works |
 | 1.19.4 to 1.20.4 | 17 | 5.0.0, 5.2.0 | Works |
 | 1.20.6 to 1.21.11 | 21 | 5.3.0 to dev build | Works |
-| 26.1.2 to 26.3 | 25+ | none available yet | Works, without message and sound blocking (26.2 and 26.3: startup and console tested only) |
+| 26.1.2 to 26.3 | 25+ | 5.5.0 dev build | Works (26.2 and 26.3: startup and console tested only, the test bot does not support them yet) |
 
 What depends on the version:
 
@@ -71,7 +72,7 @@ What depends on the version:
 | Blocking potion effects added by plugins | 1.13 |
 | Blocking sourceless explosions | 1.8.3 |
 | Undoing sourceless damage (`damage(double)`, which fires no event up to 1.9) | needs ProtocolLib on 1.7 to 1.9 |
-| Blocking messages, sounds and plugin channels | needs ProtocolLib |
+| Blocking messages, sounds and plugin channels | needs ProtocolLib (a 5.5.0 dev build on 26.x) |
 
 ## Compilation
 
@@ -180,6 +181,7 @@ world_not_found: "&cThe world {world} does not exist."
 world_required: "&cPlease specify a world: &e{usage}"
 cannot_disable_main_plugin: "&cYou cannot disable the main plugin {plugin} in any world."
 no_permission: "&cYou do not have permission to use this command."
+players_only: "&cOnly players can use this command."
 usage: "&cUsage: {usage}"
 unknown_subcommand: "&cUnknown subcommand &e{subcommand}&c. Type &e/wpm help&c to see the commands."
 
@@ -192,6 +194,44 @@ list_none: "&7none"
 # /wpm info
 info_header: "&6Worlds for the plugin &e{plugin}&6:"
 
+# Menus (/wpm gui)
+gui_back: "&eBack"
+gui_previous: "&ePrevious page"
+gui_next: "&eNext page"
+gui_page_lore: "&7Page {page}/{pages}"
+gui_title_worlds: "Worlds"
+gui_title_world: "World: {world}"
+gui_world_name: "&e{world}"
+gui_world_lore:
+  - "&7Disabled plugins: &c{disabled}"
+  - "&eClick to manage its plugins"
+gui_plugin_enabled_name: "&a{plugin}"
+gui_plugin_disabled_name: "&c{plugin}"
+gui_plugin_world_lore:
+  - "&7Enabled in {enabled}/{worlds} worlds"
+  - ""
+  - "&eClick: enable/disable in this world"
+  - "&eShift-click: enable only in this world"
+gui_plugin_locked_name: "&7{plugin}"
+gui_plugin_locked_lore: "&8Cannot be disabled"
+gui_enable_all_world: "&aEnable every plugin here"
+gui_enable_all_world_lore: "&7Removes every restriction in {world}"
+gui_view_plugins: "&bView by plugin"
+gui_view_worlds: "&bView by world"
+gui_title_plugins: "Plugins"
+gui_title_plugin: "Plugin: {plugin}"
+gui_plugin_name: "&f{plugin}"
+gui_plugin_lore:
+  - "&7Enabled in {enabled}/{worlds} worlds"
+  - "&eClick to manage its worlds"
+gui_world_enabled_name: "&a{world}"
+gui_world_disabled_name: "&c{world}"
+gui_plugin_world_entry_lore:
+  - "&eClick: enable/disable {plugin} here"
+  - "&eShift-click: enable {plugin} only here"
+gui_enable_everywhere: "&aEnable in every world"
+gui_enable_everywhere_lore: "&7Removes every restriction of {plugin}"
+
 # /wpm help
 help_header: "&6&lWorldPluginManager &7- commands"
 help_entry: "&e{usage} &7- {description}"
@@ -202,6 +242,7 @@ help_disable: "Disable a plugin in a world"
 help_focus: "Enable a plugin only in one world"
 help_status: "See which plugins are enabled in a world"
 help_info: "See in which worlds a plugin is enabled"
+help_gui: "Open the menu to manage plugins per world"
 help_reset: "Remove a plugin's restriction (undoes disable/focus)"
 help_reload: "Reload the configuration and messages"
 help_help: "Show this help"
@@ -225,6 +266,7 @@ All commands are grouped under `/wpm` (aliases: `/worldpluginmanager`, `/wplm`).
 | `/wpm status [world] [plugin]` | `/wpm flags` | See which plugins are enabled and disabled in a world |
 | `/wpm info <plugin>` | | See in which worlds a plugin is enabled and disabled |
 | `/wpm reset <plugin> [world\|*]` | | Remove a plugin's restriction (undoes `disable` / `focus`) |
+| `/wpm gui` | `/wpm menu` | Open the menu (players only) |
 | `/wpm reload` | | Reload `config.yml` and `messages.yml` |
 | `/wpm help` | `/wpm ?` | Show the help |
 
@@ -237,6 +279,15 @@ Examples:
 /wpm reset WorldEdit *           → undo the focus above
 ```
 
+### Menu
+
+`/wpm gui` opens a chest menu with two views, switched with the book in the bottom-right corner:
+
+- **By world**: click a world to see its plugins, green when enabled and red when disabled.
+- **By plugin**: plugins are green when enabled everywhere, yellow when enabled in some worlds and red when disabled everywhere. Click one to see its worlds.
+
+In both views, **click** an entry to enable or disable the plugin in that world, and **shift-click** to enable it only in that world (like `/wpm focus`). The emerald button removes every restriction of the world, or of the plugin. Each action needs the permission of the equivalent command, and WorldPluginManager itself is shown locked.
+
 The previous commands `/enpl`, `/displ`, `/focus` and `/flags` still work: they are forwarded to `/wpm enable`, `/wpm disable`, `/wpm focus` and `/wpm status`.
 
 ### Permissions
@@ -247,7 +298,7 @@ The previous commands `/enpl`, `/displ`, `/focus` and `/flags` still work: they 
 | `worldpluginmanager.enpl` | `/wpm enable` | op |
 | `worldpluginmanager.displ` | `/wpm disable` | op |
 | `worldpluginmanager.focus` | `/wpm focus` | op |
-| `worldpluginmanager.flags` | `/wpm status`, `/wpm info` | op |
+| `worldpluginmanager.flags` | `/wpm status`, `/wpm info`, `/wpm gui` | op |
 | `worldpluginmanager.reset` | `/wpm reset` | op |
 | `worldpluginmanager.reload` | `/wpm reload` | op |
 
