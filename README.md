@@ -6,7 +6,8 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 
 - Enable or disable plugins for specific worlds.
 - Focus a plugin to only be enabled in a specific world.
-- View the status of plugins in different worlds.
+- View the status of plugins per world (`/wpm status`) or per plugin (`/wpm info`).
+- A single `/wpm` command with short aliases, clickable help, and context-aware tab completion.
 - Customizable messages through `messages.yml` with support for placeholders.
 - Permission-based command execution.
 - Blocks the commands of a disabled plugin, detected automatically from the server's command map: commands declared in `plugin.yml`, commands registered at runtime (e.g. WorldEdit's `//set`), aliases and namespaced labels (`worldedit:wand`).
@@ -46,86 +47,103 @@ Stores the activation status of plugins for each world. This file is created aut
 
 ### `messages.yml`
 
-Customize the messages that the plugin sends. You can use placeholders like `{plugin}` and `{world}` in your messages.
+Customize every message the plugin sends, including the help. Color codes use `&`, placeholders are written `{like_this}`. Keys missing from your file automatically fall back to the default values bundled with the plugin, so updating the plugin never breaks an older `messages.yml`.
+
+<details>
+<summary>Default <code>messages.yml</code></summary>
 
 ```yaml
-plugin_disabled: "&cThe plugin {plugin} is disabled in the world {world}."
+# Color codes use '&'. Placeholders are written {like_this}.
+# Keys missing from this file fall back to the plugin's built-in defaults.
+
+# Status changes
 plugin_enabled: "&aThe plugin {plugin} is enabled in the world {world}."
+plugin_disabled: "&cThe plugin {plugin} is disabled in the world {world}."
+plugin_enabled_everywhere: "&aThe plugin {plugin} is now enabled in every world."
+plugin_disabled_everywhere: "&cThe plugin {plugin} is now disabled in every world."
+plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
+reset_everywhere: "&aAll restrictions removed for {plugin}: it is enabled in every world again."
+reset_world: "&aRestriction removed for {plugin} in the world {world}."
+reset_nothing: "&7{plugin} has no restriction to remove."
+reloaded: "&aConfiguration and messages reloaded."
+
+# Errors
 plugin_not_found: "&cPlugin {plugin} not found."
 world_not_found: "&cThe world {world} does not exist."
+world_required: "&cPlease specify a world: &e{usage}"
 cannot_disable_main_plugin: "&cYou cannot disable the main plugin {plugin} in any world."
 no_permission: "&cYou do not have permission to use this command."
 usage: "&cUsage: {usage}"
-flags_header: "&6Plugins for world {world}:"
-flags_empty: "&eNo plugin is configured for the world {world}."
-plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
+unknown_subcommand: "&cUnknown subcommand &e{subcommand}&c. Type &e/wpm help&c to see the commands."
+
+# /wpm status
+status_header: "&6Plugins in the world &e{world}&6:"
+list_enabled: "&a✔ Enabled ({count}): &f{entries}"
+list_disabled: "&c✘ Disabled ({count}): &f{entries}"
+list_none: "&7none"
+
+# /wpm info
+info_header: "&6Worlds for the plugin &e{plugin}&6:"
+
+# /wpm help
+help_header: "&6&lWorldPluginManager &7- commands"
+help_entry: "&e{usage} &7- {description}"
+help_hover: "&7Click to type this command"
+help_footer: "&7[world] defaults to the world you are in, &e* &7means every world."
+help_enable: "Enable a plugin in a world"
+help_disable: "Disable a plugin in a world"
+help_focus: "Enable a plugin only in one world"
+help_status: "See which plugins are enabled in a world"
+help_info: "See in which worlds a plugin is enabled"
+help_reset: "Remove a plugin's restriction (undoes disable/focus)"
+help_reload: "Reload the configuration and messages"
+help_help: "Show this help"
 ```
 
-Keys missing from your `messages.yml` automatically fall back to the default values bundled with the plugin.
-
-### `plugin.yml`
-
-Reference file listing all commands and their permissions. You normally do not need to modify it.
-
-```yaml
-name: WorldPluginManager
-main: fr.phundir.wplmanager.WorldPluginManager
-version: 2.0
-softdepend: [ProtocolLib]
-commands:
-  displ:
-    description: Disables a plugin in a specified world.
-    usage: /displ <plugin> <world>
-    permission: worldpluginmanager.displ
-  enpl:
-    description: Enables a plugin in a specified world.
-    usage: /enpl <plugin> <world>
-    permission: worldpluginmanager.enpl
-  flags:
-    description: Displays the status of plugins in a specified world.
-    usage: /flags <world> [plugin]
-    permission: worldpluginmanager.flags
-  focus:
-    description: Sets a plugin to be enabled only in a specified world.
-    usage: /focus <plugin> <world>
-    permission: worldpluginmanager.focus
-permissions:
-  worldpluginmanager.displ:
-    description: Allows the use of the /displ command.
-    default: op
-  worldpluginmanager.enpl:
-    description: Allows the use of the /enpl command.
-    default: op
-  worldpluginmanager.flags:
-    description: Allows the use of the /flags command.
-    default: op
-  worldpluginmanager.focus:
-    description: Allows the use of the /focus command.
-    default: op
-  worldpluginmanager.bypass:
-    description: Ignores per-world plugin restrictions (commands and plugin channels).
-    default: false
-```
+</details>
 
 ## Usage
 
+All commands are grouped under `/wpm` (aliases: `/worldpluginmanager`, `/wplm`). Type `/wpm` alone to get the help: it only lists the commands you are allowed to use, and clicking a line types the command for you.
+
+`[world]` is optional and defaults to **the world you are in**. `*` means **every world**. Plugin and world names are case-insensitive, and tab completion only suggests what makes sense (e.g. `/wpm enable` suggests plugins that are actually disabled somewhere).
+
 ### Commands
 
+| Command | Short form | Description |
+|---|---|---|
+| `/wpm enable <plugin> [world\|*]` | `/wpm on` | Enable a plugin in a world |
+| `/wpm disable <plugin> [world\|*]` | `/wpm off` | Disable a plugin in a world |
+| `/wpm focus <plugin> [world]` | `/wpm only` | Enable a plugin **only** in one world, disable it everywhere else |
+| `/wpm status [world] [plugin]` | `/wpm flags` | See which plugins are enabled and disabled in a world |
+| `/wpm info <plugin>` | | See in which worlds a plugin is enabled and disabled |
+| `/wpm reset <plugin> [world\|*]` | | Remove a plugin's restriction (undoes `disable` / `focus`) |
+| `/wpm reload` | | Reload `config.yml` and `messages.yml` |
+| `/wpm help` | `/wpm ?` | Show the help |
+
+Examples:
+
 ```
-/displ <plugin> <world>   - Disable a plugin in a world
-/enpl <plugin> <world>    - Enable a plugin in a world
-/flags <world> [plugin]   - Show plugin status
-/focus <plugin> <world>   - Enable a plugin only in one world
+/wpm focus WorldEdit creative    → WorldEdit only works in the "creative" world
+/wpm off Essentials              → disable Essentials in the world you are in
+/wpm on Essentials *             → enable Essentials everywhere again
+/wpm reset WorldEdit *           → undo the focus above
 ```
+
+The previous commands `/enpl`, `/displ`, `/focus` and `/flags` still work: they are forwarded to `/wpm enable`, `/wpm disable`, `/wpm focus` and `/wpm status`.
 
 ### Permissions
 
-- `worldpluginmanager.displ` – use the `/displ` command
-- `worldpluginmanager.enpl` – use the `/enpl` command
-- `worldpluginmanager.flags` – use the `/flags` command
-- `worldpluginmanager.focus` – use the `/focus` command
-- `worldpluginmanager.bypass` – ignore per-world restrictions (default: nobody, not even operators)
-
+| Permission | Allows | Default |
+|---|---|---|
+| `worldpluginmanager.*` | Every `/wpm` command (not the bypass) | op |
+| `worldpluginmanager.enpl` | `/wpm enable` | op |
+| `worldpluginmanager.displ` | `/wpm disable` | op |
+| `worldpluginmanager.focus` | `/wpm focus` | op |
+| `worldpluginmanager.flags` | `/wpm status`, `/wpm info` | op |
+| `worldpluginmanager.reset` | `/wpm reset` | op |
+| `worldpluginmanager.reload` | `/wpm reload` | op |
+| `worldpluginmanager.bypass` | Ignore per-world restrictions | nobody, not even operators |
 
 ### License
 
