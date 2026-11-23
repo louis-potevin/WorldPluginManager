@@ -12,12 +12,29 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - Permission-based command execution.
 - Blocks the commands of a disabled plugin, detected automatically from the server's command map: commands declared in `plugin.yml`, commands registered at runtime (e.g. WorldEdit's `//set`), aliases and namespaced labels (`worldedit:wand`).
 - Hides blocked commands from the player's command list and tab completion (Minecraft 1.13+).
+- **Event isolation**: a disabled plugin no longer reacts to what happens in that world (block breaks, damage, chat, movement, inventories, custom events of other plugins...).
+- **Task isolation**: the scheduled tasks of a plugin are paused while it is disabled in every world.
 - Blocks plugin channel packets using ProtocolLib when a plugin is disabled in a world.
 - `worldpluginmanager.bypass` permission to ignore all restrictions.
 
+### How a plugin is disabled in a world
+
+A plugin cannot be unloaded for a single world, so WorldPluginManager cuts it off from that world instead:
+
+| What the plugin does | In a world where it is disabled |
+|---|---|
+| Commands | Blocked and hidden from tab completion |
+| Event listeners | Not called for events happening in that world |
+| Plugin channels (ProtocolLib) | Packets blocked |
+| Scheduled tasks | Paused only when the plugin is disabled in **every** world |
+
 ### Limitations
 
-A disabled plugin is not unloaded: it keeps running in that world. Only what players trigger through commands and plugin channels is blocked; the plugin's event listeners and scheduled tasks are not affected. Aliases defined in the server's `commands.yml` are not resolved to the plugin they call.
+- **Scheduled tasks have no world.** A repeating task that, for example, loops over all online players keeps running as long as the plugin is enabled in at least one world.
+- **Lifecycle events are always delivered** (join, quit, world change, world load/unload...) so plugins keep consistent data. The list is configurable in `config.yml`.
+- **Events without a world** (server events, console commands, plugin enable/disable...) are always delivered.
+- Task isolation relies on the server's internal scheduler. On servers where it is not compatible, it turns itself off with a warning in the console.
+- Aliases defined in the server's `commands.yml` are not resolved to the plugin they call.
 
 ## Compilation
 
@@ -43,7 +60,41 @@ After the build, the plugin JAR is located in `target/WorldPluginManager-1.0-SNA
 
 ### `config.yml`
 
-Stores the activation status of plugins for each world. This file is created automatically and normally does not need manual editing.
+Controls how plugins are isolated and stores the activation status of plugins for each world (managed by the `/wpm` commands, no need to edit it by hand). Use `/wpm reload` after editing it.
+
+```yaml
+# WorldPluginManager configuration
+
+# Isolation of plugins that are disabled in some worlds.
+isolation:
+  # Stop the event listeners of a plugin from running for events that happen
+  # in a world where the plugin is disabled (block breaks, damage, chat, moves...).
+  events: true
+
+  # Pause the scheduled tasks of a plugin while it is disabled in EVERY world.
+  # Tasks have no world, so they cannot be filtered per world.
+  tasks: true
+
+  # Events always delivered to plugins, even in worlds where they are disabled.
+  # These keep plugins' internal data consistent (players joining/leaving,
+  # moving between worlds, worlds loading/unloading). Use event class names.
+  always-allowed-events:
+    - PlayerJoinEvent
+    - PlayerQuitEvent
+    - PlayerKickEvent
+    - PlayerChangedWorldEvent
+    - WorldInitEvent
+    - WorldLoadEvent
+    - WorldUnloadEvent
+    - WorldSaveEvent
+
+  # How often (in ticks, 20 = 1 second) to look for listeners and tasks
+  # registered by plugins after startup.
+  scan-interval: 100
+
+# Managed by the /wpm commands: world -> plugin -> enabled.
+pluginWorldStatus: {}
+```
 
 ### `messages.yml`
 
