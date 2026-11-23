@@ -13,6 +13,7 @@ import fr.phundir.wplmanager.command.sub.SetStatusCommand;
 import fr.phundir.wplmanager.command.sub.StatusCommand;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
+import fr.phundir.wplmanager.gui.MenuManager;
 import fr.phundir.wplmanager.isolation.IsolationSettings;
 import fr.phundir.wplmanager.isolation.PluginIsolation;
 import fr.phundir.wplmanager.listener.CommandBlockListener;
@@ -32,6 +33,7 @@ public final class WorldPluginManager extends JavaPlugin {
     private WorldStatusStore statusStore;
     private BlockingPolicy blockingPolicy;
     private PluginIsolation isolation;
+    private MenuManager menus;
     /** {@code null} on servers older than 1.13. */
     private CommandVisibilityListener commandVisibility;
 
@@ -47,6 +49,9 @@ public final class WorldPluginManager extends JavaPlugin {
 
         blockingPolicy = new BlockingPolicy(this, statusStore);
 
+        menus = new MenuManager(this);
+        getServer().getPluginManager().registerEvents(menus, this);
+
         registerCommands();
 
         CommandOwnerResolver commandResolver = new CommandOwnerResolver(getLogger());
@@ -61,6 +66,9 @@ public final class WorldPluginManager extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        if (menus != null) {
+            menus.closeAll();
+        }
         if (isolation != null) {
             isolation.stop();
         }

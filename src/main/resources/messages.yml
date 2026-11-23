@@ -30,6 +30,12 @@ list_none: "&7none"
 # /wpm info
 info_header: "&6Worlds for the plugin &e{plugin}&6:"
 
+# Menus (/wpm gui)
+gui_back: "&eBack"
+gui_previous: "&ePrevious page"
+gui_next: "&eNext page"
+gui_page_lore: "&7Page {page}/{pages}"
+
 # /wpm help
 help_header: "&6&lWorldPluginManager &7- commands"
 help_entry: "&e{usage} &7- {description}"
