@@ -15,7 +15,7 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - **Event isolation**: a disabled plugin no longer reacts to what happens in that world (block breaks, damage, chat, movement, inventories, custom events of other plugins...).
 - **Task isolation**: the scheduled tasks of a plugin are paused while it is disabled in every world.
 - **Action blocking**: what a disabled plugin does to a world through the Bukkit API is cancelled, even from its scheduled tasks (teleports, kicks, bans, damage, game mode, potion effects, block breaking/placing, explosions, spawned entities, opened inventories, forced chat).
-- **Message blocking** (with ProtocolLib): players no longer receive the chat messages, titles and action bars sent by a plugin disabled in their world.
+- **Message and sound blocking** (with ProtocolLib): players no longer receive the chat messages, titles and action bars, nor hear the sounds, of a plugin disabled in their world.
 - Blocks plugin channel packets using ProtocolLib when a plugin is disabled in a world.
 - `worldpluginmanager.bypass` permission to ignore all restrictions.
 
@@ -32,15 +32,16 @@ A plugin cannot be unloaded for a single world, so WorldPluginManager cuts it of
 | Actions through the Bukkit API (teleport, kick, damage, game mode, potion effects, block break/place, explosions, entity spawn, inventory open, forced chat) | Cancelled, wherever they come from in the plugin's code (tasks included) |
 | Bans of online players | Undone (the ban recorded just before the cancelled kick is removed) |
 | Messages, titles, action bars (ProtocolLib) | Not delivered to players in that world |
+| Sounds (ProtocolLib) | Not played to players in that world |
 
 Actions are attributed by looking at the call stack: if code from a plugin disabled in that world is involved, the action is cancelled. This also applies when that plugin goes through another one (e.g. a disabled plugin dispatching a `/kick` command handled by Essentials).
 
 ### Limitations
 
 - **Scheduled tasks have no world.** A repeating task keeps running as long as the plugin is enabled in at least one world. What it does is still blocked in disabled worlds when the action fires a Bukkit event (see the table above).
-- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt without a source (`LivingEntity#damage(double)`) fires no event either: it is undone right after being applied, which requires ProtocolLib. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
+- **Some actions fire no Bukkit event and cannot be blocked**: changing blocks directly through code (`Block#setType`, `BlockState#update`), giving items, setting health. On 1.8, damage dealt without a source (`LivingEntity#damage(double)`) fires no event either: it is undone right after being applied (health restored, hurt animation and sound dropped), which requires ProtocolLib. Asynchronous teleports (Paper's `teleportAsync`) are not attributed.
 - **Bans**: only bans of online players recorded in the server's ban list are undone. Bans of offline players, and bans stored by ban plugins in their own database, are not.
-- **Messages** require ProtocolLib, and are only attributed when the plugin sends them from its own code (not when they are queued and sent later by the server).
+- **Messages and sounds** require ProtocolLib, and are only attributed when the plugin sends them from its own code (not when they are queued and sent later by the server).
 - **Do not disable library plugins** (Vault, ProtocolLib, PlaceholderAPI...) in a world: every plugin going through them there would have its actions cancelled.
 - **Lifecycle events are always delivered** (join, quit, world change, world load/unload...) so plugins keep consistent data. The list is configurable in `config.yml`.
 - **Events without a world** (server events, console commands, plugin enable/disable...) are always delivered.
@@ -108,6 +109,10 @@ isolation:
   # Stop players from receiving the messages (chat, action bar, titles) sent by a
   # plugin disabled in their world. Requires ProtocolLib.
   messages: true
+
+  # Stop players from hearing the sounds played by a plugin disabled in their
+  # world (Player#playSound, World#playSound...). Requires ProtocolLib.
+  sounds: true
 
   # Write every blocked action to the console (plugin, action, world, player).
   # Useful to check what is blocked when setting up the plugin.
