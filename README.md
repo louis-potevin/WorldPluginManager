@@ -9,7 +9,14 @@ WorldPluginManager is a Minecraft plugin that allows server administrators to ma
 - View the status of plugins in different worlds.
 - Customizable messages through `messages.yml` with support for placeholders.
 - Permission-based command execution.
+- Blocks the commands of a disabled plugin, detected automatically from the server's command map: commands declared in `plugin.yml`, commands registered at runtime (e.g. WorldEdit's `//set`), aliases and namespaced labels (`worldedit:wand`).
+- Hides blocked commands from the player's command list and tab completion (Minecraft 1.13+).
 - Blocks plugin channel packets using ProtocolLib when a plugin is disabled in a world.
+- `worldpluginmanager.bypass` permission to ignore all restrictions.
+
+### Limitations
+
+A disabled plugin is not unloaded: it keeps running in that world. Only what players trigger through commands and plugin channels is blocked; the plugin's event listeners and scheduled tasks are not affected. Aliases defined in the server's `commands.yml` are not resolved to the plugin they call.
 
 ## Compilation
 
@@ -51,9 +58,11 @@ no_permission: "&cYou do not have permission to use this command."
 usage: "&cUsage: {usage}"
 flags_header: "&6Plugins for world {world}:"
 flags_empty: "&eNo plugin is configured for the world {world}."
+plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
 ```
 
 Keys missing from your `messages.yml` automatically fall back to the default values bundled with the plugin.
+
 ### `plugin.yml`
 
 Reference file listing all commands and their permissions. You normally do not need to modify it.
@@ -62,6 +71,7 @@ Reference file listing all commands and their permissions. You normally do not n
 name: WorldPluginManager
 main: fr.phundir.wplmanager.WorldPluginManager
 version: 2.0
+softdepend: [ProtocolLib]
 commands:
   displ:
     description: Disables a plugin in a specified world.
@@ -92,6 +102,9 @@ permissions:
   worldpluginmanager.focus:
     description: Allows the use of the /focus command.
     default: op
+  worldpluginmanager.bypass:
+    description: Ignores per-world plugin restrictions (commands and plugin channels).
+    default: false
 ```
 
 ## Usage
@@ -111,6 +124,7 @@ permissions:
 - `worldpluginmanager.enpl` – use the `/enpl` command
 - `worldpluginmanager.flags` – use the `/flags` command
 - `worldpluginmanager.focus` – use the `/focus` command
+- `worldpluginmanager.bypass` – ignore per-world restrictions (default: nobody, not even operators)
 
 
 ### License
