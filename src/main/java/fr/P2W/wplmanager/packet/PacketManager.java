@@ -5,7 +5,7 @@ import com.comphenix.protocol.ProtocolManager;
 import com.comphenix.protocol.events.ListenerPriority;
 import com.comphenix.protocol.events.PacketAdapter;
 import com.comphenix.protocol.events.PacketEvent;
-import com.comphenix.protocol.events.PacketType;
+import com.comphenix.protocol.PacketType;
 import com.comphenix.protocol.wrappers.MinecraftKey;
 import fr.P2W.wplmanager.WorldPluginManager;
 import org.bukkit.Bukkit;
