@@ -5,6 +5,7 @@ import fr.phundir.wplmanager.blocking.CommandOwnerResolver;
 import fr.phundir.wplmanager.command.LegacyCommand;
 import fr.phundir.wplmanager.command.WpmCommand;
 import fr.phundir.wplmanager.command.sub.FocusCommand;
+import fr.phundir.wplmanager.command.sub.GuiCommand;
 import fr.phundir.wplmanager.command.sub.HelpCommand;
 import fr.phundir.wplmanager.command.sub.InfoCommand;
 import fr.phundir.wplmanager.command.sub.ReloadCommand;
@@ -86,6 +87,10 @@ public final class WorldPluginManager extends JavaPlugin {
         return statusStore;
     }
 
+    public MenuManager getMenus() {
+        return menus;
+    }
+
     /**
      * Saves the statuses and applies them to online players.
      * Call after any change made through {@link #getStatusStore()}.
@@ -123,6 +128,7 @@ public final class WorldPluginManager extends JavaPlugin {
         wpm.register(new FocusCommand(this));
         wpm.register(new StatusCommand(this));
         wpm.register(new InfoCommand(this));
+        wpm.register(new GuiCommand(this));
         wpm.register(new ResetCommand(this));
         wpm.register(new ReloadCommand(this));
         wpm.register(new HelpCommand(this, wpm));
