@@ -8,6 +8,7 @@ import fr.phundir.wplmanager.command.PluginStatusCommand;
 import fr.phundir.wplmanager.config.Messages;
 import fr.phundir.wplmanager.config.WorldStatusStore;
 import fr.phundir.wplmanager.listener.CommandBlockListener;
+import fr.phundir.wplmanager.listener.CommandVisibilityListener;
 import fr.phundir.wplmanager.protocol.ChannelPacketBlocker;
 import org.bukkit.command.PluginCommand;
 import org.bukkit.command.TabExecutor;
@@ -22,6 +23,8 @@ public final class WorldPluginManager extends JavaPlugin {
     private Messages messages;
     private WorldStatusStore statusStore;
     private BlockingPolicy blockingPolicy;
+    /** {@code null} on servers older than 1.13. */
+    private CommandVisibilityListener commandVisibility;
 
     @Override
     public void onEnable() {
@@ -43,6 +46,7 @@ public final class WorldPluginManager extends JavaPlugin {
         CommandOwnerResolver commandResolver = new CommandOwnerResolver(getLogger());
         getServer().getPluginManager().registerEvents(
                 new CommandBlockListener(messages, commandResolver, blockingPolicy), this);
+        registerCommandVisibility(commandResolver);
         registerPacketBlocker();
 
         getLogger().info("Plugin enabled!");
@@ -64,6 +68,17 @@ public final class WorldPluginManager extends JavaPlugin {
         return statusStore;
     }
 
+    /**
+     * Saves the statuses and applies them to online players.
+     * Call after any change made through {@link #getStatusStore()}.
+     */
+    public void onStatusesChanged() {
+        statusStore.save();
+        if (commandVisibility != null) {
+            commandVisibility.refreshAll();
+        }
+    }
+
     private void registerCommand(String name, TabExecutor executor) {
         PluginCommand command = getCommand(name);
         if (command == null) {
@@ -72,6 +87,15 @@ public final class WorldPluginManager extends JavaPlugin {
         }
         command.setExecutor(executor);
         command.setTabCompleter(executor);
+    }
+
+    private void registerCommandVisibility(CommandOwnerResolver commandResolver) {
+        if (!CommandVisibilityListener.isSupported()) {
+            getLogger().info("Server older than 1.13: blocked commands stay visible in tab completion.");
+            return;
+        }
+        commandVisibility = new CommandVisibilityListener(commandResolver, blockingPolicy);
+        getServer().getPluginManager().registerEvents(commandVisibility, this);
     }
 
     /**

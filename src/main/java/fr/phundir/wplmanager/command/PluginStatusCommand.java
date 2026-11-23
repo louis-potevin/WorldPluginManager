@@ -35,7 +35,7 @@ public final class PluginStatusCommand extends PluginWorldCommand {
         }
 
         applyStatus(sender, target, world.getName(), enable);
-        statusStore.save();
+        plugin.onStatusesChanged();
     }
 
     @Override

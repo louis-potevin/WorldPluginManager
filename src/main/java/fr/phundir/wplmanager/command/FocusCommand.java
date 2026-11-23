@@ -31,7 +31,7 @@ public final class FocusCommand extends PluginWorldCommand {
         for (String worldName : worldNames()) {
             applyStatus(sender, target, worldName, worldName.equals(focusedWorld.getName()));
         }
-        statusStore.save();
+        plugin.onStatusesChanged();
     }
 
     @Override
