@@ -7,6 +7,10 @@ plugin_disabled: "&cThe plugin {plugin} is disabled in the world {world}."
 plugin_enabled_everywhere: "&aThe plugin {plugin} is now enabled in every world."
 plugin_disabled_everywhere: "&cThe plugin {plugin} is now disabled in every world."
 plugin_focused: "&aThe plugin {plugin} is now enabled only in the world {world}."
+reset_everywhere: "&aAll restrictions removed for {plugin}: it is enabled in every world again."
+reset_world: "&aRestriction removed for {plugin} in the world {world}."
+reset_nothing: "&7{plugin} has no restriction to remove."
+reloaded: "&aConfiguration and messages reloaded."
 
 # Errors
 plugin_not_found: "&cPlugin {plugin} not found."
@@ -23,6 +27,9 @@ list_enabled: "&a✔ Enabled ({count}): &f{entries}"
 list_disabled: "&c✘ Disabled ({count}): &f{entries}"
 list_none: "&7none"
 
+# /wpm info
+info_header: "&6Worlds for the plugin &e{plugin}&6:"
+
 # /wpm help
 help_header: "&6&lWorldPluginManager &7- commands"
 help_entry: "&e{usage} &7- {description}"
@@ -32,4 +39,7 @@ help_enable: "Enable a plugin in a world"
 help_disable: "Disable a plugin in a world"
 help_focus: "Enable a plugin only in one world"
 help_status: "See which plugins are enabled in a world"
+help_info: "See in which worlds a plugin is enabled"
+help_reset: "Remove a plugin's restriction (undoes disable/focus)"
+help_reload: "Reload the configuration and messages"
 help_help: "Show this help"

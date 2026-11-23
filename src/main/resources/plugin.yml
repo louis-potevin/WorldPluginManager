@@ -28,6 +28,8 @@ permissions:
       worldpluginmanager.displ: true
       worldpluginmanager.focus: true
       worldpluginmanager.flags: true
+      worldpluginmanager.reset: true
+      worldpluginmanager.reload: true
   worldpluginmanager.enpl:
     description: Allows /wpm enable.
     default: op
@@ -38,7 +40,13 @@ permissions:
     description: Allows /wpm focus.
     default: op
   worldpluginmanager.flags:
-    description: Allows /wpm status.
+    description: Allows /wpm status and /wpm info.
+    default: op
+  worldpluginmanager.reset:
+    description: Allows /wpm reset.
+    default: op
+  worldpluginmanager.reload:
+    description: Allows /wpm reload.
     default: op
   worldpluginmanager.bypass:
     description: Ignores per-world plugin restrictions (commands and plugin channels).

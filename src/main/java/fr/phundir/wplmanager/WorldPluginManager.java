@@ -6,6 +6,9 @@ import fr.phundir.wplmanager.command.LegacyCommand;
 import fr.phundir.wplmanager.command.WpmCommand;
 import fr.phundir.wplmanager.command.sub.FocusCommand;
 import fr.phundir.wplmanager.command.sub.HelpCommand;
+import fr.phundir.wplmanager.command.sub.InfoCommand;
+import fr.phundir.wplmanager.command.sub.ReloadCommand;
+import fr.phundir.wplmanager.command.sub.ResetCommand;
 import fr.phundir.wplmanager.command.sub.SetStatusCommand;
 import fr.phundir.wplmanager.command.sub.StatusCommand;
 import fr.phundir.wplmanager.config.Messages;
@@ -79,12 +82,25 @@ public final class WorldPluginManager extends JavaPlugin {
         }
     }
 
+    /** Reloads config.yml and messages.yml from disk, discarding unsaved changes. */
+    public void reload() {
+        reloadConfig();
+        statusStore.load();
+        messages.load();
+        if (commandVisibility != null) {
+            commandVisibility.refreshAll();
+        }
+    }
+
     private void registerCommands() {
         WpmCommand wpm = new WpmCommand(messages);
         wpm.register(new SetStatusCommand(this, true));
         wpm.register(new SetStatusCommand(this, false));
         wpm.register(new FocusCommand(this));
         wpm.register(new StatusCommand(this));
+        wpm.register(new InfoCommand(this));
+        wpm.register(new ResetCommand(this));
+        wpm.register(new ReloadCommand(this));
         wpm.register(new HelpCommand(this, wpm));
         registerCommand(WpmCommand.LABEL, wpm);
 

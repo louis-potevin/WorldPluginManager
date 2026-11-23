@@ -60,6 +60,55 @@ public final class WorldStatusStore {
         statusByWorld.computeIfAbsent(worldName, k -> new ConcurrentHashMap<>()).put(pluginName, enabled);
     }
 
+    /**
+     * Removes the plugin's explicit status in one world (it becomes enabled by default).
+     *
+     * @return {@code true} if there was something to remove
+     */
+    public boolean reset(String pluginName, String worldName) {
+        Map<String, Boolean> statuses = statusByWorld.get(worldName);
+        if (statuses == null || statuses.remove(pluginName) == null) {
+            return false;
+        }
+        if (statuses.isEmpty()) {
+            statusByWorld.remove(worldName);
+        }
+        return true;
+    }
+
+    /**
+     * Removes the plugin's explicit statuses in every world.
+     *
+     * @return {@code true} if there was something to remove
+     */
+    public boolean resetEverywhere(String pluginName) {
+        boolean changed = false;
+        for (String worldName : new HashSet<>(statusByWorld.keySet())) {
+            changed |= reset(pluginName, worldName);
+        }
+        return changed;
+    }
+
+    /** Worlds where the plugin has an explicit status. */
+    public Set<String> getConfiguredWorlds(String pluginName) {
+        Set<String> worlds = new HashSet<>();
+        for (Map.Entry<String, Map<String, Boolean>> entry : statusByWorld.entrySet()) {
+            if (entry.getValue().containsKey(pluginName)) {
+                worlds.add(entry.getKey());
+            }
+        }
+        return worlds;
+    }
+
+    /** Names of the plugins with an explicit status in at least one world. */
+    public Set<String> getConfiguredPlugins() {
+        Set<String> plugins = new HashSet<>();
+        for (Map<String, Boolean> statuses : statusByWorld.values()) {
+            plugins.addAll(statuses.keySet());
+        }
+        return plugins;
+    }
+
     /** Names of the plugins explicitly disabled in at least one world. */
     public Set<String> getDisabledPlugins() {
         Set<String> disabled = new HashSet<>();
