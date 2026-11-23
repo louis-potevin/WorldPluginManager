@@ -12,19 +12,23 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerGameModeChangeEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.plugin.Plugin;
 
 /**
  * Cancels the actions a disabled plugin performs in a world through the Bukkit API,
  * from anywhere in its code (scheduled tasks included): teleporting, kicking, damaging,
  * changing a game mode, spawning creatures, opening inventories, making a player chat.
+ * Bans of online players are undone along with the kick that follows them.
  * <p>
  * Runs at the lowest priority so other plugins never see the cancelled action.
  */
 final class ActionGuardListener implements Listener {
     private final ActionGuard guard;
+    private final BanReverter banReverter;
 
-    ActionGuardListener(ActionGuard guard) {
+    ActionGuardListener(ActionGuard guard, BanReverter banReverter) {
         this.guard = guard;
+        this.banReverter = banReverter;
     }
 
     /** A plugin acting on a player is judged by the world the player is leaving. */
@@ -33,9 +37,14 @@ final class ActionGuardListener implements Listener {
         guard.cancelIfBlocked(event, event.getFrom().getWorld(), event.getPlayer(), "teleport");
     }
 
+    /** Also undoes the ban that usually comes right before the kick. */
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
     public void onKick(PlayerKickEvent event) {
-        guard.cancelIfBlocked(event, event.getPlayer().getWorld(), event.getPlayer(), "kick");
+        Player player = event.getPlayer();
+        Plugin caller = guard.cancelIfBlocked(event, player.getWorld(), player, "kick");
+        if (caller != null) {
+            banReverter.revertRecentBan(player, caller.getName());
+        }
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
