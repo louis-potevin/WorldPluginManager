@@ -29,15 +29,14 @@ public final class ActionGuard {
     }
 
     /**
-     * @param player the player affected, if any (the bypass permission lets the action through)
      * @return the plugin disabled in {@code world} that caused the current action, or {@code null}
      */
-    public Plugin findBlockedCaller(World world, Player player) {
+    public Plugin findBlockedCaller(World world) {
         // Walking the stack has a cost: skip worlds where nothing is disabled.
         if (world == null || !statusStore.hasDisabledPlugins(world.getName())) {
             return null;
         }
-        return callers.findOnStack(caller -> policy.isBlocked(caller, world, player));
+        return callers.findOnStack(caller -> policy.isBlocked(caller, world));
     }
 
     /**
@@ -47,7 +46,7 @@ public final class ActionGuard {
      * @return the plugin responsible if the event was cancelled, {@code null} otherwise
      */
     Plugin cancelIfBlocked(Cancellable event, World world, Player player, String action) {
-        Plugin caller = findBlockedCaller(world, player);
+        Plugin caller = findBlockedCaller(world);
         if (caller != null) {
             event.setCancelled(true);
             logBlocked(caller, action, world, player);

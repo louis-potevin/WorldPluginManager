@@ -57,7 +57,7 @@ final class BlockGuardListener implements Listener {
             return;
         }
         World world = event.getLocation().getWorld();
-        Plugin caller = guard.findBlockedCaller(world, null);
+        Plugin caller = guard.findBlockedCaller(world);
         if (caller != null) {
             event.setCancelled(true);
             guard.logBlocked(caller, "spawn of " + event.getEntityType().name().toLowerCase(Locale.ROOT), world, null);

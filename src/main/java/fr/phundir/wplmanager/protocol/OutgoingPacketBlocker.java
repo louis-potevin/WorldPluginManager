@@ -76,7 +76,7 @@ public final class OutgoingPacketBlocker extends PacketAdapter {
         }
         Player player = event.getPlayer();
         World world = player.getWorld();
-        Plugin sender = guard.findBlockedCaller(world, player);
+        Plugin sender = guard.findBlockedCaller(world);
         if (sender != null) {
             event.setCancelled(true);
             guard.logBlocked(sender, action, world, player);

@@ -4,7 +4,6 @@ import fr.phundir.wplmanager.blocking.BlockingPolicy;
 import org.bukkit.World;
 import org.bukkit.event.Event;
 import org.bukkit.event.HandlerList;
-import org.bukkit.event.player.PlayerEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.RegisteredListener;
 
@@ -68,7 +67,7 @@ final class ListenerIsolator {
         if (world == null) {
             return false;
         }
-        return policy.isBlocked(owner, world, event instanceof PlayerEvent ? ((PlayerEvent) event).getPlayer() : null);
+        return policy.isBlocked(owner, world);
     }
 
     private boolean isAlwaysAllowed(Event event) {

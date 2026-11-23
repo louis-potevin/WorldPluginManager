@@ -72,8 +72,7 @@ public final class LegacyDamageReverter extends PacketAdapter {
         if (!(entity instanceof LivingEntity)) {
             return;
         }
-        Player player = entity instanceof Player ? (Player) entity : null;
-        Plugin caller = guard.findBlockedCaller(entity.getWorld(), player);
+        Plugin caller = guard.findBlockedCaller(entity.getWorld());
         if (caller == null) {
             return;
         }

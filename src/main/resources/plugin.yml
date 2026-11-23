@@ -25,7 +25,7 @@ commands:
     usage: /wpm status [world] [plugin]
 permissions:
   worldpluginmanager.*:
-    description: Gives access to every /wpm command (but not the bypass).
+    description: Gives access to every /wpm command.
     default: op
     children:
       worldpluginmanager.enpl: true
@@ -52,6 +52,3 @@ permissions:
   worldpluginmanager.reload:
     description: Allows /wpm reload.
     default: op
-  worldpluginmanager.bypass:
-    description: Ignores per-world plugin restrictions (commands and plugin channels).
-    default: false
