@@ -79,12 +79,12 @@ What depends on the version:
 WorldPluginManager is built with **Maven** and requires **JDK 8** or later. The plugin itself targets Java 8, so a single jar runs on every supported version.
 
 ```bash
-git clone https://github.com/P2Wdisabled/WorldPluginManager.git
+git clone https://github.com/louis-potevin/WorldPluginManager.git
 cd WorldPluginManager
 mvn package
 ```
 
-After the build, the plugin JAR is located in `target/WorldPluginManager-1.0-SNAPSHOT.jar`.
+After the build, the plugin JAR is located in `target/WorldPluginManager-<version>.jar` (e.g. `target/WorldPluginManager-3.0.jar`).
 
 ## Installation
 
@@ -255,4 +255,4 @@ The previous commands `/enpl`, `/displ`, `/focus` and `/flags` still work: they 
 
 ### License
 
-This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. See the [LICENSE](https://github.com/P2Wdisabled/WorldPluginManager/blob/main/LICENSE) file for details.
+This project is licensed under the Creative Commons Attribution-NonCommercial 4.0 International License. See the [LICENSE](https://github.com/louis-potevin/WorldPluginManager/blob/main/LICENSE) file for details.
