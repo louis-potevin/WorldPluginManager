@@ -5,7 +5,7 @@
 
     <groupId>fr.phundir.wplmanager</groupId>
     <artifactId>WorldPluginManager</artifactId>
-    <version>3.0</version>
+    <version>3.1</version>
     <name>WorldPluginManager</name>
     <description>Enable or disable any plugin per world: commands, events, actions, messages and sounds.</description>
 
