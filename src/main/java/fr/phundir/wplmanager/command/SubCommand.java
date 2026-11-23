@@ -176,8 +176,12 @@ public abstract class SubCommand {
     }
 
     protected static List<String> worldNames() {
-        return Bukkit.getWorlds().stream()
-                .map(World::getName)
-                .collect(Collectors.toList());
+        // Not World::getName: compiled against a 1.17+ API, the method reference would point to
+        // WorldInfo (where getName is declared since 1.17) and fail on older servers.
+        List<String> names = new ArrayList<>();
+        for (World world : Bukkit.getWorlds()) {
+            names.add(world.getName());
+        }
+        return names;
     }
 }
